@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 const moment = require("moment");
+const Joi = require("joi");
+
+const { userSchema } = require("./User");
 
 var now = Date.now();
 var time = moment(now).format("DD-MM-YYYY h:mm");
@@ -22,7 +25,7 @@ const postSchema = new Schema({
     required: true,
   },
   postedBy: {
-    type: String,
+    type: Schema.ObjectId,
     required: true,
   },
   postedAt: {
@@ -35,6 +38,20 @@ const postSchema = new Schema({
   },
 });
 
+function validatePost(post) {
+  const schema = Joi.object({
+    title: Joi.string().required(),
+    body: Joi.string().required(),
+    image: Joi.string().required(),
+    postedTo: Joi.string().required(),
+    postedBy: Joi.string().required(),
+    postedAt: Joi.string().required(),
+    votes: Joi.object({ up: Joi.number(), down: Joi.number() }),
+  });
+  return schema.validate(post);
+}
+
 const Post = mongoose.model("Post", postSchema);
 
-module.exports = Post;
+exports.Post = Post;
+exports.validate = validatePost;
