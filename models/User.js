@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
+const jwt = require("jsonwebtoken");
 
 const { Schema } = mongoose;
 
@@ -11,6 +12,11 @@ const userSchema = new Schema({
   profileImage: { type: String },
   coverImage: { type: String },
 });
+
+userSchema.methods.generateAuthToken = function () {
+  const token = jwt.sign({ _id: this._id }, "jwtPrivateKey");
+  return token;
+};
 
 function validateUser(user) {
   const schema = Joi.object({
