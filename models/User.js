@@ -14,12 +14,12 @@ const userSchema = new Schema({
 
 function validateUser(user) {
   const schema = Joi.object({
-    name: Joi.string().min(5).required(),
-    email: Joi.string().email().required(),
-    password: Joi.string().min(4).required(),
-    description: Joi.string().min(10),
-    profileImage: Joi.string(),
-    coverImage: Joi.string(),
+    name: Joi.string().min(5).required().label("Name"),
+    email: Joi.string().email().required().label("Email"),
+    password: Joi.string().min(4).required().label("Password"),
+    description: Joi.string().min(10).label("Description"),
+    profileImage: Joi.string().label("Profile Image"),
+    coverImage: Joi.string().label("Cover Image"),
   });
   return schema.validate(user);
 }
