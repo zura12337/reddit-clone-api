@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { Post, validate } = require("../models/Post");
+const { User } = require("../models/User");
 const auth = require("../middleware/auth");
 
 router.get("/", async (req, res) => {
@@ -29,14 +30,39 @@ router.get("/:id", async (req, res) => {
 router.post("/:id/action", auth, async (req, res) => {
   const action = req.body.action;
   const counter = action === "like" ? 1 : -1;
-  Post.updateOne(
-    { _id: req.params.id },
-    { $inc: { votes: counter } },
-    {},
-    (err, numberAffected) => {
-      res.send("");
-    }
-  );
+
+  const post = await Post.findById(req.params.id);
+
+  post.votes = post.votes + counter;
+  post.save();
+
+  if (action === "like") {
+    User.updateOne(
+      { _id: req.user._id },
+      {
+        $push: {
+          likedPosts: post,
+        },
+      },
+      { new: true },
+      (err, numberAffected) => {
+        res.send("");
+      }
+    );
+  } else {
+    User.updateOne(
+      { _id: req.user._id },
+      {
+        $unset: {
+          likedPosts: post,
+        },
+      },
+      { new: true },
+      (err, numberAffected) => {
+        res.send("");
+      }
+    );
+  }
 });
 
 module.exports = router;

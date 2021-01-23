@@ -54,4 +54,5 @@ function validatePost(post) {
 const Post = mongoose.model("Post", postSchema);
 
 exports.Post = Post;
+exports.postSchema = postSchema;
 exports.validate = validatePost;

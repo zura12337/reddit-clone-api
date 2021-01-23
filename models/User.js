@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
 const jwt = require("jsonwebtoken");
+const { postSchema } = require("./Post");
 
 const { Schema } = mongoose;
 
@@ -11,6 +12,7 @@ const userSchema = new Schema({
   description: { type: String },
   profileImage: { type: String },
   coverImage: { type: String },
+  likedPosts: { type: [postSchema | undefined] },
 });
 
 userSchema.methods.generateAuthToken = function () {
@@ -26,6 +28,7 @@ function validateUser(user) {
     description: Joi.string().min(10).label("Description"),
     profileImage: Joi.string().label("Profile Image"),
     coverImage: Joi.string().label("Cover Image"),
+    likedPosts: Joi.array(),
   });
   return schema.validate(user);
 }
