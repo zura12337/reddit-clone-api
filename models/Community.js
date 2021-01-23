@@ -9,8 +9,8 @@ const communitySchema = new Schema({
   name: { type: String, required: true },
   description: String,
   image: { type: String },
-  members: { type: [userSchema] },
-  posts: { type: [postSchema] },
+  members: { type: [String] },
+  posts: { type: [String] },
 });
 
 const Community = mongoose.model("Community", communitySchema);
@@ -20,8 +20,8 @@ function validateCommunity(community) {
     name: Joi.string().required(),
     description: Joi.string().min(10).required(),
     image: Joi.string().required(),
-    members: Joi.array(),
-    posts: Joi.array(),
+    members: Joi.string(),
+    posts: Joi.string(),
   });
   return schema.validate(community);
 }
