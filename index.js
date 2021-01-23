@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const posts = require("./routes/posts");
 const users = require("./routes/users");
+const community = require("./routes/community");
 const app = express();
 
 app.use(express.json());
@@ -14,6 +15,7 @@ mongoose.connect(
 
 app.use("/api/posts", posts);
 app.use("/api/users", users);
+app.use("/api/community", community);
 
 const port = 4000;
 const server = app.listen(port, () => {
