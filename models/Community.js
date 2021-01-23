@@ -1,13 +1,13 @@
 const mongoose = require("mongoose");
 const Post = require("./Post");
-const User = require("./User");
+const { userSchema } = require("./User");
 
 const { Schema } = mongoose;
 
 const communitySchema = new Schema({
   name: { type: String, required: true },
   description: String,
-  members: User,
+  members: { type: [userSchema] },
   posts: { type: Post },
 });
 
