@@ -19,4 +19,24 @@ router.post("/", auth, async (req, res) => {
   res.send(post);
 });
 
+router.get("/:id", async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  if (!post) res.status(404).send("No Post Found with given ID");
+
+  res.send(post);
+});
+
+router.post("/:id/action", auth, async (req, res) => {
+  const action = req.body.action;
+  const counter = action === "like" ? 1 : -1;
+  Post.updateOne(
+    { _id: req.params.id },
+    { $inc: { votes: counter } },
+    {},
+    (err, numberAffected) => {
+      res.send("");
+    }
+  );
+});
+
 module.exports = router;
