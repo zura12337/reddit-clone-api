@@ -33,25 +33,25 @@ router.post("/:id/action", auth, async (req, res) => {
   const counter = action === "like" ? 1 : -1;
 
   const post = await Post.findById(req.params.id);
+  if (!post) res.status(404).send("No Post found with given ID");
   const user = await User.findById(req.user._id);
 
-  if (!user.likedPosts.includes(post._id)) {
+  if (!user.likedPosts.includes(post._id) || action === "unlike") {
     post.votes = post.votes + counter;
+    if (user.likedPosts) {
+      if (action === "like") {
+        user["likedPosts"] = [...user["likedPosts"], post._id];
+      } else {
+        user["likedPosts"].splice(post, 1);
+      }
+    }
+
+    post.save();
+    user.save();
+    res.send("");
   } else {
     res.status(400).send("Already Liked");
   }
-
-  if (user.likedPosts) {
-    if (action === "like") {
-      user["likedPosts"] = [post._id];
-    } else {
-      user["likedPosts"].splice(post, 1);
-    }
-  }
-
-  post.save();
-  user.save();
-  res.send("");
 });
 
 module.exports = router;
