@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
-const { postSchema } = require("./Post");
 const Joi = require("joi");
-const { userSchema } = require("./User");
 
 const { Schema } = mongoose;
 

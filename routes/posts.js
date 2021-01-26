@@ -3,11 +3,19 @@ const router = express.Router();
 const { Post, validate } = require("../models/Post");
 const { User } = require("../models/User");
 const { Community } = require("../models/Community");
+
 const auth = require("../middleware/auth");
 
 router.get("/", async (req, res) => {
-  const posts = await Post.find();
-
+  let posts;
+  if (req.header("Authorization")) {
+    auth(req, res);
+    let user = await User.findById(req.body._id);
+    console.log("It Worked!!!!");
+    posts = await Post.find();
+  } else {
+    posts = await Post.find();
+  }
   res.send(posts);
 });
 

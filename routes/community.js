@@ -33,7 +33,10 @@ router.post("/:id/join", auth, async (req, res) => {
   let community = await Community.findById(req.params.id);
   if (!community) res.status(404).send("Community not found.");
 
+  user.joined.push(community._id);
   community.members.push(user._id);
+
+  user.save();
   community.save();
 
   res.send(community);

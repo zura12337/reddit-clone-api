@@ -13,6 +13,7 @@ const userSchema = new Schema({
   profileImage: { type: String },
   coverImage: { type: String },
   likedPosts: { type: [String] },
+  joined: { type: [String] },
 });
 
 userSchema.methods.generateAuthToken = function () {
@@ -29,6 +30,7 @@ function validateUser(user) {
     profileImage: Joi.string().label("Profile Image"),
     coverImage: Joi.string().label("Cover Image"),
     likedPosts: Joi.string(),
+    joined: Joi.string(),
   });
   return schema.validate(user);
 }
