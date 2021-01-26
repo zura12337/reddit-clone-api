@@ -7,8 +7,8 @@ const communitySchema = new Schema({
   name: { type: String, required: true },
   description: String,
   image: { type: String },
-  members: { type: [String] },
-  posts: { type: [String] },
+  members: { type: [Schema.Types.ObjectId], ref: "User" },
+  posts: { type: [Schema.Types.ObjectId], ref: "Posts" },
 });
 
 const Community = mongoose.model("Community", communitySchema);

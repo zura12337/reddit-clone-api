@@ -12,7 +12,7 @@ router.get("/", async (req, res) => {
     auth(req, res);
     let user = await User.findById(req.body._id);
     console.log("It Worked!!!!");
-    posts = await Post.find();
+    posts = await Post.find({ postedTo: "600c733cd16488da9ac9fc86" });
   } else {
     posts = await Post.find();
   }

@@ -21,11 +21,13 @@ const postSchema = new Schema({
     type: String,
   },
   postedTo: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: "Community",
     required: true,
   },
   postedBy: {
-    type: Schema.ObjectId,
+    type: Schema.Types.ObjectId,
+    ref: "User",
     required: true,
   },
   postedAt: {
