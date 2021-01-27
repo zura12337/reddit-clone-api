@@ -23,7 +23,6 @@ const postSchema = new Schema({
   postedTo: {
     type: Schema.Types.ObjectId,
     ref: "Community",
-    required: true,
   },
   postedBy: {
     type: Schema.Types.ObjectId,
@@ -47,7 +46,7 @@ function validatePost(post) {
     image: Joi.string().required(),
     postedTo: Joi.string().required(),
     postedBy: Joi.string().required(),
-    postedAt: Joi.string().required(),
+    postedAt: Joi.string(),
     votes: Joi.number().required(),
   });
   return schema.validate(post);

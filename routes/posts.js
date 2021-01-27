@@ -27,8 +27,8 @@ router.post("/", auth, async (req, res) => {
   if (!community) res.status(404).send("No community found");
 
   let post = new Post(req.body);
+  post.postedBy = req.user._id;
   community.posts = [...community.posts, post._id];
-
   community.save();
   post.save();
 
