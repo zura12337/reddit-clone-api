@@ -46,7 +46,7 @@ function validatePost(post) {
     image: Joi.string().required(),
     postedTo: Joi.string().required(),
     postedBy: Joi.string(),
-    postedAt: Joi.string().required(),
+    postedAt: Joi.string(),
     votes: Joi.number().required(),
   });
   return schema.validate(post);
