@@ -14,6 +14,7 @@ router.post("/", auth, async (req, res) => {
   if (error) res.status(400).send(error.details[0].message);
 
   let community = new Community(req.body);
+  community.members = [req.user._id];
   community.save();
 
   res.send(community);
