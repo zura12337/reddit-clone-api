@@ -4,8 +4,10 @@ const posts = require("./routes/posts");
 const users = require("./routes/users");
 const community = require("./routes/community");
 const auth = require("./routes/auth");
+var cors = require("cors");
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
