@@ -10,9 +10,11 @@ router.get("/", async (req, res) => {
   let posts;
   if (req.header("Authorization")) {
     auth(req, res);
-    let user = await User.findById(req.body._id);
-    console.log("It Worked!!!!");
-    posts = await Post.find({ postedTo: "600c733cd16488da9ac9fc86" });
+    let user = await User.findById(req.user._id);
+    posts = await Post.find({ postedTo: { $in: user.joined } });
+    if (posts.length < 5) {
+      posts.push(await Post.find());
+    }
   } else {
     posts = await Post.find();
   }
