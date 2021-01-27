@@ -6,7 +6,7 @@ const { postSchema } = require("./Post");
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
-  name: { type: String, required: true },
+  username: { type: String, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true },
   description: { type: String },
@@ -23,7 +23,7 @@ userSchema.methods.generateAuthToken = function () {
 
 function validateUser(user) {
   const schema = Joi.object({
-    name: Joi.string().min(5).required().label("Name"),
+    username: Joi.string().min(5).required().label("Name"),
     email: Joi.string().email().required().label("Email"),
     password: Joi.string().min(4).required().label("Password"),
     description: Joi.string().min(10).label("Description"),
