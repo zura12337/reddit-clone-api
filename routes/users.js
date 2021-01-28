@@ -29,4 +29,8 @@ router.post("/", async (req, res) => {
   res.cookie("token", token, { httpOnly: true }).send();
 });
 
+router.get("/logout", auth, async (req, res) => {
+  res.clearCookie("token").send();
+});
+
 module.exports = router;
