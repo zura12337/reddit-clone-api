@@ -7,7 +7,10 @@ const auth = require("../middleware/auth");
 const { User, validate } = require("../models/User");
 
 router.get("/me", auth, async (req, res) => {
-  const user = await User.findById(req.user._id).select("-password");
+  const user = await User.findById(req.user._id)
+    .select("-password")
+    .populate("likedPosts")
+    .populate("joined");
   res.send(user);
 });
 
@@ -31,6 +34,14 @@ router.post("/", async (req, res) => {
 
 router.get("/logout", auth, async (req, res) => {
   res.clearCookie("token").send();
+});
+
+router.get("/:id", async (req, res) => {
+  const id = req.params.id;
+  let user = await User.findById(id);
+  if (!user) res.status(404).send("No User Found");
+
+  res.send(user).populate("likedPosts").populate("joined");
 });
 
 module.exports = router;

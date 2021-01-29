@@ -11,12 +11,14 @@ router.get("/", async (req, res) => {
   if (req.header("Authorization")) {
     auth(req, res);
     let user = await User.findById(req.user._id);
-    posts = await Post.find({ postedTo: { $in: user.joined } });
+    posts = await Post.find({ postedTo: { $in: user.joined } })
+      .populate("postedBy")
+      .populate("postedTo");
     if (posts.length < 5) {
       posts.push(await Post.find());
     }
   } else {
-    posts = await Post.find();
+    posts = await Post.find({}).populate("postedBy").populate("postedTo");
   }
   res.send(posts);
 });
@@ -32,7 +34,15 @@ router.post("/", auth, async (req, res) => {
   post.postedBy = req.user._id;
   community.posts = [...community.posts, post._id];
   community.save();
-  post.save();
+  post.save((error) => {
+    if (!error) {
+      Post.find({})
+        .populate("postedBy")
+        .exec(function (error, posts) {
+          console.log(posts);
+        });
+    }
+  });
 
   res.send(post);
 });
