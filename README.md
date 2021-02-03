@@ -94,7 +94,7 @@
 
 ---
 
-### Upcoming updates
+### Upcoming updates 🌱
 
 - Comments on post
 - Share post 
