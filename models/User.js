@@ -13,6 +13,7 @@ const userSchema = new Schema({
   profileImage: { type: String },
   coverImage: { type: String },
   likedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+  dislikedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
   joined: [{ type: Schema.Types.ObjectId, ref: "Community" }],
 });
 
@@ -29,7 +30,8 @@ function validateUser(user) {
     description: Joi.string().min(10).label("Description"),
     profileImage: Joi.string().label("Profile Image"),
     coverImage: Joi.string().label("Cover Image"),
-    likedPosts: Joi.string(),
+    likedPosts: Joi.string().label("Liked Posts"),
+    dislikedPosts: Joi.string().label("Disliked Posts"),
     joined: Joi.string(),
   });
   return schema.validate(user);

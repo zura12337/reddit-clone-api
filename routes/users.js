@@ -10,6 +10,7 @@ router.get("/me", auth, async (req, res) => {
   const user = await User.findById(req.user._id)
     .select("-password")
     .populate("likedPosts")
+    .populate("dislikedPosts")
     .populate("joined");
   res.send(user);
 });
