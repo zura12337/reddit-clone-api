@@ -47,4 +47,30 @@ router.get("/:id", async (req, res) => {
   res.send(user).populate("likedPosts").populate("joined");
 });
 
+router.post("/:id/follow", auth, async (req, res) => {
+  const id = req.params.id;
+
+  const targetUser = await User.findById(id);
+  if (!targetUser) res.status(400).send("Bad Request. Try Again.");
+
+  const user = await User.findById(req.user._id);
+  if (!user) res.status(400).send("Bad Request. Try Again.");
+
+  if (user._id === targetUser._id)
+    res.status(400).send("Can not follow yourself");
+
+  if (user.following.includes(targetUser._id)) {
+    targetUser.followers.splice(user._id, 1);
+    user.following.splice(targetUser._id, 1);
+  } else {
+    targetUser.followers.push(req.user._id);
+    user.following.push(targetUser._id);
+  }
+
+  user.save();
+  targetUser.save();
+
+  res.json(targetUser);
+});
+
 module.exports = router;

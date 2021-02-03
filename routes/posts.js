@@ -65,6 +65,7 @@ router.post("/:id/action", auth, async (req, res) => {
   let counter = action === "like" ? 1 : -1;
   let status = action === "like" ? "like" : "unlike";
 
+  // This shitty code needs to be updated ASAP.
   if (user.likedPosts && user.dislikedPosts) {
     if (
       action === "like" &&
@@ -112,37 +113,6 @@ router.post("/:id/action", auth, async (req, res) => {
       user.dislikedPosts = [...user.dislikedPosts, post._id];
     }
   }
-
-  // if (user.likedPosts && user.dislikedPosts) {
-  //   if (user.likedPosts.includes(post._id) && action === "like") {
-  //     counter = -1;
-  //     status = "removed";
-  //     console.log("User Posts", user.likedPosts);
-  //     console.log("Actual Post", post._id);
-  //     user.likedPosts.splice(post._id, 1);
-  //   } else if (user.likedPosts.includes(post._id) && action === "unlike") {
-  //     counter = -2;
-  //     status = "unlike";
-  //     user.likedPosts.splice(post._id, 1);
-  //   }
-  //   if (user.dislikedPosts.includes(post._id) && action === "unlike") {
-  //     status = "removed";
-  //     counter = +1;
-  //     user.dislikedPosts.splice(post._id, 1);
-  //   } else if (user.dislikedPosts.includes(post._id) && action === "like") {
-  //     counter = +2;
-  //     status = "like";
-  //     user.dislikedPosts.splice(post._id, 1);
-  //   }
-  //   if (action === "like" && !user.likedPosts.includes(post._id)) {
-  //     user["likedPosts"] = [...user["likedPosts"], post._id];
-  //     user["dislikedPosts"].splice(post._id, 1);
-  //   } else if (action === "unlike" && !user.dislikedPosts.includes(post._id)) {
-  //     user["likedPosts"].splice(post._id, 1);
-  //     user["dislikedPosts"] = [...user["dislikedPosts"], post._id];
-  //   }
-  //   user.save();
-  // }
   post.votes = post.votes + counter;
 
   post.save();
