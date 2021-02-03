@@ -92,6 +92,7 @@ router.post("/:id/action", auth, async (req, res) => {
       user.dislikedPosts.includes(post._id)
     ) {
       counter = 2;
+      user.likedPosts = [...user.likedPosts, post._id];
       user.dislikedPosts.splice(post._id, 1);
     } else if (
       action === "unlike" &&
@@ -108,6 +109,7 @@ router.post("/:id/action", auth, async (req, res) => {
     ) {
       counter = -2;
       user.likedPosts.splice(post._id, 1);
+      user.dislikedPosts = [...user.dislikedPosts, post._id];
     }
   }
 
