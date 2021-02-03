@@ -7,12 +7,14 @@ const auth = require("../middleware/auth");
 const { User, validate } = require("../models/User");
 
 router.get("/me", auth, async (req, res) => {
-  const user = await User.findById(req.user._id)
+  await User.findById(req.user._id)
     .select("-password")
     .populate("likedPosts")
     .populate("dislikedPosts")
-    .populate("joined");
-  res.send(user);
+    .populate("joined")
+    .then((user) => {
+      res.json(user);
+    });
 });
 
 router.post("/", async (req, res) => {
