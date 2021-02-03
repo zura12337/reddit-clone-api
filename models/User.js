@@ -12,8 +12,8 @@ const userSchema = new Schema({
   description: { type: String },
   profileImage: { type: String },
   coverImage: { type: String },
-  likedPosts: { type: [Schema.Types.ObjectId], ref: "Post" },
-  joined: { type: [Schema.Types.ObjectId], ref: "Community" },
+  likedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+  joined: [{ type: Schema.Types.ObjectId, ref: "Community" }],
 });
 
 userSchema.methods.generateAuthToken = function () {
