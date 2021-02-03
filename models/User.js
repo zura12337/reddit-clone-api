@@ -12,8 +12,11 @@ const userSchema = new Schema({
   description: { type: String },
   profileImage: { type: String },
   coverImage: { type: String },
-  likedPosts: { type: [Schema.Types.ObjectId], ref: "Post" },
-  joined: { type: [Schema.Types.ObjectId], ref: "Community" },
+  likedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+  dislikedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+  followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  following: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  joined: [{ type: Schema.Types.ObjectId, ref: "Community" }],
 });
 
 userSchema.methods.generateAuthToken = function () {
@@ -29,7 +32,10 @@ function validateUser(user) {
     description: Joi.string().min(10).label("Description"),
     profileImage: Joi.string().label("Profile Image"),
     coverImage: Joi.string().label("Cover Image"),
-    likedPosts: Joi.string(),
+    likedPosts: Joi.string().label("Liked Posts"),
+    dislikedPosts: Joi.string().label("Disliked Posts"),
+    followers: Joi.array().label("Followers"),
+    following: Joi.array().label("Following"),
     joined: Joi.string(),
   });
   return schema.validate(user);
