@@ -14,6 +14,8 @@ const userSchema = new Schema({
   coverImage: { type: String },
   likedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
   dislikedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+  followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  following: [{ type: Schema.Types.ObjectId, ref: "User" }],
   joined: [{ type: Schema.Types.ObjectId, ref: "Community" }],
 });
 
@@ -32,6 +34,8 @@ function validateUser(user) {
     coverImage: Joi.string().label("Cover Image"),
     likedPosts: Joi.string().label("Liked Posts"),
     dislikedPosts: Joi.string().label("Disliked Posts"),
+    followers: Joi.array().label("Followers"),
+    following: Joi.array().label("Following"),
     joined: Joi.string(),
   });
   return schema.validate(user);
