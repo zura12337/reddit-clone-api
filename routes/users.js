@@ -12,6 +12,8 @@ router.get("/me", auth, async (req, res) => {
     .populate("likedPosts")
     .populate("dislikedPosts")
     .populate("joined")
+    .populate("following")
+    .populate("followers")
     .then((user) => {
       res.json(user);
     });
@@ -41,36 +43,45 @@ router.get("/logout", auth, async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   const id = req.params.id;
-  let user = await User.findById(id);
-  if (!user) res.status(404).send("No User Found");
-
-  res.send(user).populate("likedPosts").populate("joined");
+  await User.findById(id)
+    .select("-password")
+    .populate("likedPosts")
+    .populate("dislikedPosts")
+    .populate("joined")
+    .populate("following")
+    .populate("followers")
+    .then((user) => {
+      res.json(user);
+    });
 });
 
 router.post("/:id/follow", auth, async (req, res) => {
   const id = req.params.id;
-
+  let status;
   const targetUser = await User.findById(id);
   if (!targetUser) res.status(400).send("Bad Request. Try Again.");
 
   const user = await User.findById(req.user._id);
   if (!user) res.status(400).send("Bad Request. Try Again.");
 
-  if (user._id === targetUser._id)
+  if (user._id.toString() == targetUser._id.toString()) {
     res.status(400).send("Can not follow yourself");
-
-  if (user.following.includes(targetUser._id)) {
-    targetUser.followers.splice(user._id, 1);
-    user.following.splice(targetUser._id, 1);
   } else {
-    targetUser.followers.push(req.user._id);
-    user.following.push(targetUser._id);
+    if (user.following.includes(targetUser._id)) {
+      targetUser.followers.splice(user._id, 1);
+      user.following.splice(targetUser._id, 1);
+      status = "unfollow";
+    } else {
+      targetUser.followers.push(req.user._id);
+      user.following.push(targetUser._id);
+      status = "follow";
+    }
+
+    user.save();
+    targetUser.save();
+
+    res.send(status);
   }
-
-  user.save();
-  targetUser.save();
-
-  res.json(targetUser);
 });
 
 module.exports = router;
