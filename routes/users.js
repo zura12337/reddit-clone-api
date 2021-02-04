@@ -6,6 +6,11 @@ const auth = require("../middleware/auth");
 
 const { User, validate } = require("../models/User");
 
+/**
+ ** GET
+ * Get Current Logged in user
+ */
+
 router.get("/me", auth, async (req, res) => {
   await User.findById(req.user._id)
     .select("-password")
@@ -18,6 +23,11 @@ router.get("/me", auth, async (req, res) => {
       res.json(user);
     });
 });
+
+/**
+ ** POST
+ * Create New User
+ */
 
 router.post("/", async (req, res) => {
   const { error } = validate(req.body);
@@ -37,9 +47,19 @@ router.post("/", async (req, res) => {
   res.cookie("token", token, { httpOnly: true }).send();
 });
 
+/**
+ * * GET
+ * Logout
+ */
+
 router.get("/logout", auth, async (req, res) => {
   res.clearCookie("token").send();
 });
+
+/**
+ * * GET
+ * Get User by given ID
+ */
 
 router.get("/:id", async (req, res) => {
   const id = req.params.id;
@@ -54,6 +74,11 @@ router.get("/:id", async (req, res) => {
       res.json(user);
     });
 });
+
+/**
+ * * POST
+ * Follow/Unfollow User
+ */
 
 router.post("/:id/follow", auth, async (req, res) => {
   const id = req.params.id;
@@ -82,6 +107,34 @@ router.post("/:id/follow", auth, async (req, res) => {
 
     res.send(status);
   }
+});
+
+/**
+ * * GET
+ * Get Followers
+ */
+
+router.get("/:id/followers", async (req, res) => {
+  const id = req.params.id;
+  await User.findById(id)
+    .select("followers")
+    .populate("followers")
+    .then(({ followers }) => res.send(followers))
+    .catch(() => res.status(400).send("Bad Request."));
+});
+
+/**
+ * * GET
+ * Get Followers
+ */
+
+router.get("/:id/followers", async (req, res) => {
+  const id = req.params.id;
+  await User.findById(id)
+    .select("following")
+    .populate("following")
+    .then(({ following }) => res.send(following))
+    .catch(() => res.status(400).send("Bad Request."));
 });
 
 module.exports = router;
