@@ -17,12 +17,4 @@ router.post("/", async (req, res) => {
   res.cookie("token", token, { httpOnly: true }).send(token);
 });
 
-function validate(user) {
-  const schema = Joi.object({
-    email: Joi.string().email().required().label("Email"),
-    password: Joi.string().min(4).required().label("Password"),
-  });
-  return schema.validate(user);
-}
-
 module.exports = router;

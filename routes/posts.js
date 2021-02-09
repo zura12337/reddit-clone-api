@@ -8,7 +8,7 @@ const auth = require("../middleware/auth");
 
 router.get("/", async (req, res) => {
   let posts;
-  if (req.header("Authorization")) {
+  if (req.cookies.token) {
     auth(req, res);
     let user = await User.findById(req.user._id);
     posts = await Post.find({ postedTo: { $in: user.joined } })

@@ -11,7 +11,7 @@ function auth(req, res, next) {
       next();
     }
   } catch (ex) {
-    res.status(400).send("Invalid Token");
+    res.status(400);
   }
 }
 
