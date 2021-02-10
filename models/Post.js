@@ -35,6 +35,7 @@ const postSchema = new Schema({
   },
   votes: {
     type: Number,
+    default: 0,
     required: true,
   },
 });
@@ -47,7 +48,7 @@ function validatePost(post) {
     postedTo: Joi.string().required(),
     postedBy: Joi.string(),
     postedAt: Joi.string(),
-    votes: Joi.number().required(),
+    votes: Joi.number(),
   });
   return schema.validate(post);
 }

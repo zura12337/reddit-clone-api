@@ -8,18 +8,18 @@ const auth = require("../middleware/auth");
 
 router.get("/", async (req, res) => {
   let posts;
-  if (req.cookies.token) {
-    auth(req, res);
-    let user = await User.findById(req.user._id);
-    posts = await Post.find({ postedTo: { $in: user.joined } })
-      .populate("postedBy")
-      .populate("postedTo");
-    if (posts.length < 5) {
-      posts.push(await Post.find());
-    }
-  } else {
-    posts = await Post.find({}).populate("postedBy").populate("postedTo");
-  }
+  // if (req.cookies.token) {
+  //   auth(req, res);
+  //   let user = await User.findById(req.user._id);
+  //   posts = await Post.find({ postedTo: { $in: user.joined } })
+  //     .populate("postedBy")
+  //     .populate("postedTo");
+  //   if (posts.length < 10) {
+  //     posts.push(await Post.find());
+  //   }
+  // } else {
+  posts = await Post.find({}).populate("postedBy").populate("postedTo");
+  // }
   res.send(posts);
 });
 
@@ -31,6 +31,7 @@ router.post("/", auth, async (req, res) => {
   if (!community) res.status(404).send("No community found");
 
   let post = new Post(req.body);
+  post.votes = 0;
   post.postedBy = req.user._id;
   community.posts = [...community.posts, post._id];
   community.save();
