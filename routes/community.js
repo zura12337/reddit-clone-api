@@ -13,9 +13,13 @@ router.post("/", auth, async (req, res) => {
   const { error } = validate(req.body);
   if (error) res.status(400).send(error.details[0].message);
 
-  let community = new Community(req.body);
+  let community = await new Community(req.body);
   community.members = [req.user._id];
   community.save();
+
+  let user = await User.findById(req.user._id);
+  user.joined = [...user.joined, community._id];
+  user.save();
 
   res.send(community);
 });
