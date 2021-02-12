@@ -8,18 +8,16 @@ const auth = require("../middleware/auth");
 
 router.get("/", async (req, res) => {
   let posts;
-  // if (req.cookies.token) {
-  //   auth(req, res);
-  //   let user = await User.findById(req.user._id);
-  //   posts = await Post.find({ postedTo: { $in: user.joined } })
-  //     .populate("postedBy")
-  //     .populate("postedTo");
-  //   if (posts.length < 10) {
-  //     posts.push(await Post.find());
-  //   }
-  // } else {
-  posts = await Post.find({}).populate("postedBy").populate("postedTo");
-  // }
+  if (req.cookies.token) {
+    auth(req, res);
+    let user = await User.findById(req.user._id);
+    posts = await Post.find({ postedTo: { $in: user.joined } })
+      .populate("postedBy")
+      .populate("postedTo");
+  } else {
+    posts = await Post.find({}).populate("postedBy").populate("postedTo");
+  }
+  posts = posts.reverse();
   res.send(posts);
 });
 

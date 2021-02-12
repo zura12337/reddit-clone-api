@@ -137,4 +137,9 @@ router.get("/:id/followers", async (req, res) => {
     .catch(() => res.status(400).send("Bad Request."));
 });
 
+/**
+ * * PUT
+ * Change User information
+ */
+
 module.exports = router;
