@@ -128,7 +128,7 @@ router.get("/:id/followers", async (req, res) => {
  * Get Followers
  */
 
-router.get("/:id/followers", async (req, res) => {
+router.get("/:id/following", async (req, res) => {
   const id = req.params.id;
   await User.findById(id)
     .select("following")
