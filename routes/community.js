@@ -38,8 +38,19 @@ router.post("/:id/join", auth, async (req, res) => {
   let community = await Community.findById(req.params.id);
   if (!community) res.status(404).send("Community not found.");
 
-  user.joined.push(community._id);
-  community.members.push(user._id);
+  let joinedCommunities = [];
+
+  user.joined.forEach((community) => {
+    joinedCommunities.push(community.toString());
+  });
+
+  if (joinedCommunities.indexOf(community._id.toString()) >= 0) {
+    user.joined.splice(user.joined.indexOf(community._id.toString()), 1);
+    community.members.splice(community.members.indexOf(user._id.toString()), 1);
+  } else {
+    user.joined.push(community._id);
+    community.members.push(user._id);
+  }
 
   user.save();
   community.save();
