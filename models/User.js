@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Joi = require("joi");
 const jwt = require("jsonwebtoken");
 const { postSchema } = require("./Post");
+const deepPopulate = require("mongoose-deep-populate")(mongoose);
 
 const { Schema } = mongoose;
 
@@ -18,6 +19,8 @@ const userSchema = new Schema({
   following: [{ type: Schema.Types.ObjectId, ref: "User" }],
   joined: [{ type: Schema.Types.ObjectId, ref: "Community" }],
 });
+
+userSchema.plugin(deepPopulate);
 
 userSchema.methods.generateAuthToken = function () {
   const token = jwt.sign({ _id: this._id }, "jwtPrivateKey");

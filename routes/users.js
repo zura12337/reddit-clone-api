@@ -19,6 +19,9 @@ router.get("/me", auth, async (req, res) => {
     .populate("joined")
     .populate("following")
     .populate("followers")
+    .deepPopulate(
+      "likedPosts.postedBy, likedPosts.postedTo, dislikedPosts.postedBy, dislikedPosts.postedTo"
+    )
     .then((user) => {
       res.json(user);
     });
@@ -70,6 +73,9 @@ router.get("/:id", async (req, res) => {
     .populate("joined")
     .populate("following")
     .populate("followers")
+    .deepPopulate(
+      "likedPosts.postedBy, likedPosts.postedTo, dislikedPosts.postedBy, dislikedPosts.postedTo"
+    )
     .then((user) => {
       res.json(user);
     });
