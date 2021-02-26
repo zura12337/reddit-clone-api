@@ -47,7 +47,9 @@ router.post("/", auth, async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-  const post = await Post.findById(req.params.id);
+  const post = await Post.findById(req.params.id)
+    .populate("postedBy")
+    .populate("postedTo");
   if (!post) res.status(404).send("No Post Found with given ID");
 
   res.send(post);
