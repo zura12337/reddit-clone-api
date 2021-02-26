@@ -51,6 +51,18 @@ router.post("/", async (req, res) => {
 });
 
 /**
+ ** POST
+ * Check if user is already registered
+ */
+
+router.post("/check", async (req, res) => {
+  let user = await User.findOne({ email: req.body.email });
+  if (user) return res.status(400).send("User already registered");
+
+  res.send("Not registered");
+});
+
+/**
  * * GET
  * Logout
  */
