@@ -62,6 +62,17 @@ router.post("/check", async (req, res) => {
   res.send("Not registered");
 });
 
+router.put("/", auth, async (req, res) => {
+  let user = await User.findById(req.user._id);
+  if (!user) res.send(400).send("Bad request");
+
+  user = _.extend(user, req.body);
+
+  user.save();
+
+  res.send();
+});
+
 /**
  * * GET
  * Logout
