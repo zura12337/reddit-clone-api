@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
 const jwt = require("jsonwebtoken");
-const { postSchema } = require("./Post");
 const deepPopulate = require("mongoose-deep-populate")(mongoose);
 
 const { Schema } = mongoose;
@@ -18,6 +17,7 @@ const userSchema = new Schema({
   followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
   following: [{ type: Schema.Types.ObjectId, ref: "User" }],
   joined: [{ type: Schema.Types.ObjectId, ref: "Community" }],
+  createdCommunities: [{ type: Schema.Types.ObjectId, ref: "Community" }],
 });
 
 userSchema.plugin(deepPopulate);
@@ -40,6 +40,7 @@ function validateUser(user) {
     followers: Joi.array().label("Followers"),
     following: Joi.array().label("Following"),
     joined: Joi.string(),
+    createdCommunities: Joi.string(),
   });
   return schema.validate(user);
 }
