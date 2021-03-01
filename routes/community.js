@@ -19,6 +19,7 @@ router.post("/", auth, async (req, res) => {
 
   let user = await User.findById(req.user._id);
   user.joined = [...user.joined, community._id];
+  user.createdCommunities = [...user.createdCommunities, community._id];
   user.save();
 
   res.send(community);
