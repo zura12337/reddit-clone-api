@@ -13,7 +13,11 @@ router.post("/", auth, async (req, res) => {
   const { error } = validate(req.body);
   if (error) res.status(400).send(error.details[0].message);
 
-  let community = await new Community(req.body);
+  let community = Community.findOne({ name: req.body.name });
+  if (community)
+    res.status(400).send("Community with given name already exists.");
+
+  community = await new Community(req.body);
   community.members = [req.user._id];
   community.save();
 
@@ -25,11 +29,31 @@ router.post("/", auth, async (req, res) => {
   res.send(community);
 });
 
-router.get("/:id", async (req, res) => {
-  const community = await Community.findById(req.params.id);
-  if (!community) res.status(404).send("No community found with given ID");
-
-  res.send(community);
+router.get("/:name", async (req, res) => {
+  await Community.findOne({
+    name: req.params.name,
+  })
+    .populate({
+      path: "posts",
+      model: "Post",
+      populate: [
+        {
+          path: "postedTo",
+          model: "Community",
+        },
+        {
+          path: "postedBy",
+          model: "User",
+        },
+      ],
+    })
+    .populate({ path: "posts.postedTo", model: "Community" })
+    .populate({ path: "posts.postedBy", model: "User" })
+    .populate({ path: "members", model: "User" })
+    .then((community) => {
+      res.send(community);
+      console.log(community);
+    });
 });
 
 router.post("/:id/join", auth, async (req, res) => {
