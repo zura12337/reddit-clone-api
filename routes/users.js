@@ -39,6 +39,9 @@ router.post("/", async (req, res) => {
   let user = await User.findOne({ email: req.body.email });
   if (user) return res.status(400).send("User already registered");
 
+  user = await User.findOne({ username: req.body.username });
+  if (user) return res.status(400).send("User already registered");
+
   user = new User(req.body);
   const salt = await bcrypt.genSalt(10);
 
@@ -87,9 +90,9 @@ router.get("/logout", auth, async (req, res) => {
  * Get User by given ID
  */
 
-router.get("/:id", async (req, res) => {
-  const id = req.params.id;
-  await User.findById(id)
+router.get("/:username", async (req, res) => {
+  const username = req.params.username;
+  await User.findOne({ username: username })
     .select("-password")
     .populate("likedPosts")
     .populate("dislikedPosts")
