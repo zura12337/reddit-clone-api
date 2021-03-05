@@ -3,6 +3,7 @@ const router = express.Router();
 const { Community, validate } = require("../models/Community");
 const { User } = require("../models/User");
 const auth = require("../middleware/auth");
+const isAdmin = require("../middleware/isAdmin");
 
 router.get("/", async (req, res) => {
   const community = await Community.find();
@@ -13,12 +14,13 @@ router.post("/", auth, async (req, res) => {
   const { error } = validate(req.body);
   if (error) res.status(400).send(error.details[0].message);
 
-  let community = Community.findOne({ name: req.body.name });
+  let community = await Community.findOne({ name: req.body.name });
   if (community)
     res.status(400).send("Community with given name already exists.");
 
   community = await new Community(req.body);
   community.members = [req.user._id];
+  community.moderators = [req.user._id];
   community.save();
 
   let user = await User.findById(req.user._id);
@@ -79,6 +81,13 @@ router.post("/:id/join", auth, async (req, res) => {
 
   user.save();
   community.save();
+
+  res.send(community);
+});
+
+router.delete("/:id", auth, isAdmin, async (req, res) => {
+  let community = await Community.findByIdAndDelete(req.params.id);
+  if (!community) res.status(400).send("Community not found");
 
   res.send(community);
 });
