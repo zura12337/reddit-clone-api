@@ -2,8 +2,6 @@ const mongoose = require("mongoose");
 const moment = require("moment");
 const Joi = require("joi");
 
-const { userSchema } = require("./User");
-
 var now = Date.now();
 var time = moment(now).format("DD-MM-YYYY h:mm");
 const { Schema } = mongoose;
