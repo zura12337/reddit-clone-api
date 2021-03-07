@@ -8,6 +8,7 @@ const time = moment().format("MMM DD, YYYY");
 
 const communitySchema = new Schema({
   name: { type: String, required: true },
+  username: { type: String },
   description: String,
   image: { type: String },
   cover: { type: String },
@@ -23,6 +24,7 @@ const Community = mongoose.model("Community", communitySchema);
 function validateCommunity(community) {
   const schema = Joi.object({
     name: Joi.string().required(),
+    username: Joi.string().required(),
     description: Joi.string().min(10).required(),
     image: Joi.string().required(),
     cover: Joi.string(),
