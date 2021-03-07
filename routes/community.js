@@ -34,9 +34,9 @@ router.post("/", auth, async (req, res) => {
   res.send(community);
 });
 
-router.get("/:name", async (req, res) => {
+router.get("/:username", async (req, res) => {
   await Community.findOne({
-    username: req.params.name,
+    username: req.params.username,
   })
     .populate({
       path: "posts",
