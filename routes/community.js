@@ -14,13 +14,16 @@ router.post("/", auth, async (req, res) => {
   const { error } = validate(req.body);
   if (error) res.status(400).send(error.details[0].message);
 
-  let community = await Community.findOne({ name: req.body.name });
+  let community = await Community.findOne({
+    username: req.body.name.split(" ").join(""),
+  });
   if (community)
     res.status(400).send("Community with given name already exists.");
 
   community = await new Community(req.body);
   community.members = [req.user._id];
   community.moderators = [req.user._id];
+  community.username = community.name.split(" ").join("");
   community.save();
 
   let user = await User.findById(req.user._id);
@@ -33,7 +36,7 @@ router.post("/", auth, async (req, res) => {
 
 router.get("/:name", async (req, res) => {
   await Community.findOne({
-    name: req.params.name,
+    username: req.params.name,
   })
     .populate({
       path: "posts",
@@ -54,7 +57,6 @@ router.get("/:name", async (req, res) => {
     .populate({ path: "members", model: "User" })
     .then((community) => {
       res.send(community);
-      console.log(community);
     });
 });
 

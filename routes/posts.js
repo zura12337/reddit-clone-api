@@ -18,6 +18,7 @@ router.get("/", async (req, res) => {
     posts = await Post.find({}).populate("postedBy").populate("postedTo");
   }
   posts = posts.reverse();
+
   res.send(posts);
 });
 
