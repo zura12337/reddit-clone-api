@@ -33,7 +33,9 @@ const upload = multer({
 
 router.post("/upload", upload.single("photo"), (req, res) => {
   if (req.file) {
-    res.send(`localhost:${process.env.PORT}/static/` + req.file.filename);
+    res.send(
+      `http://localhost:${process.env.PORT}/static/` + req.file.filename
+    );
   } else res.send("Error");
 });
 
