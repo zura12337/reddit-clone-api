@@ -182,7 +182,7 @@ router.post("/reset-password", async (req, res) => {
   var transport = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "zura.reddit@gmail.com",
+      user: process.env.EMAIL_MAIL,
       pass: process.env.EMAIL_PASSWORD,
     },
   });
