@@ -183,7 +183,7 @@ router.post("/reset-password", async (req, res) => {
     service: "gmail",
     auth: {
       user: "zura.reddit@gmail.com",
-      pass: "Zuriko04",
+      pass: process.env.EMAIL_PASSWORD,
     },
   });
 
