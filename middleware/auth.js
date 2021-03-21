@@ -5,7 +5,7 @@ function auth(req, res, next) {
   if (!token) res.status(401).send("Access Denied");
 
   try {
-    const decoded = jwt.verify(token, "jwtPrivateKey");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     if (next) {
       next();

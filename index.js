@@ -12,7 +12,6 @@ const http = require("http").Server(app);
 const path = require("path");
 const { Post } = require("./models/Post");
 const { User } = require("./models/User");
-const { post } = require("./routes/posts");
 const io = require("socket.io")(http);
 
 require("dotenv").config();
