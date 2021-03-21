@@ -7,31 +7,36 @@ const isAdmin = require("../middleware/isAdmin");
 
 router.get("/", async (req, res) => {
   const community = await Community.find();
+  community.reverse();
   res.send(community);
 });
 
 router.post("/", auth, async (req, res) => {
   const { error } = validate(req.body);
-  if (error) res.status(400).send(error.details[0].message);
+  if (error) {
+    res.status(400).send(error.details[0].message);
+  } else {
+    let community = await Community.findOne({
+      username: req.body.name.split(" ").join(""),
+    });
+    if (community) {
+      res.status(400).send("Community with given name already exists.");
+    } else {
+      community = await new Community(req.body);
+      community.members = [req.user._id];
+      community.moderators = [req.user._id];
+      community.createdBy = req.user._id;
+      community.username = community.name.split(" ").join("");
+      community.save();
 
-  let community = await Community.findOne({
-    username: req.body.name.split(" ").join(""),
-  });
-  if (community)
-    res.status(400).send("Community with given name already exists.");
+      let user = await User.findById(req.user._id);
+      user.joined = [...user.joined, community._id];
+      user.createdCommunities = [...user.createdCommunities, community._id];
+      user.save();
 
-  community = await new Community(req.body);
-  community.members = [req.user._id];
-  community.moderators = [req.user._id];
-  community.username = community.name.split(" ").join("");
-  community.save();
-
-  let user = await User.findById(req.user._id);
-  user.joined = [...user.joined, community._id];
-  user.createdCommunities = [...user.createdCommunities, community._id];
-  user.save();
-
-  res.send(community);
+      res.send(community);
+    }
+  }
 });
 
 router.get("/:username", async (req, res) => {
@@ -55,6 +60,8 @@ router.get("/:username", async (req, res) => {
     .populate({ path: "posts.postedTo", model: "Community" })
     .populate({ path: "posts.postedBy", model: "User" })
     .populate({ path: "members", model: "User" })
+    .populate({ path: "moderators", model: "User" })
+    .populate({ path: "createdBy", model: "User" })
     .then((community) => {
       res.send(community);
     });

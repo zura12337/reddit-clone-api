@@ -23,10 +23,10 @@ const Community = mongoose.model("Community", communitySchema);
 
 function validateCommunity(community) {
   const schema = Joi.object({
-    name: Joi.string().required(),
-    username: Joi.string().required(),
-    description: Joi.string().min(10).required(),
-    image: Joi.string().required(),
+    name: Joi.string().required().label("Name"),
+    username: Joi.string(),
+    description: Joi.string().min(10).required().label("Description"),
+    image: Joi.string(),
     cover: Joi.string(),
     members: Joi.string(),
     moderators: Joi.string(),

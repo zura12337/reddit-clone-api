@@ -8,8 +8,70 @@ const images = require("./routes/images");
 var cors = require("cors");
 const cookieParser = require("cookie-parser");
 const app = express();
+const http = require("http").Server(app);
 const path = require("path");
+const { Post } = require("./models/Post");
+const { User } = require("./models/User");
+const { post } = require("./routes/posts");
+const io = require("socket.io")(http);
+
 require("dotenv").config();
+
+io.on("connection", function (sockets) {
+  sockets.on("post-vote", async function ({ action, status, postId, userId }) {
+    let counter = 0;
+
+    if (action === "like" && status === "") {
+      counter = 1;
+      status = "like";
+    } else if (action === "like" && status === "like") {
+      counter = -1;
+      status = "";
+    } else if (action === "like" && status === "unlike") {
+      counter = 2;
+      status = "like";
+    } else if (action === "unlike" && status === "") {
+      counter = -1;
+      status = "unlike";
+    } else if (action === "unlike" && status === "unlike") {
+      counter = 1;
+      status = "";
+    } else if (action === "unlike" && status === "like") {
+      counter = -2;
+      status = "unlike";
+    } else {
+      counter = 0;
+      status = "";
+    }
+
+    io.emit("post-vote", { status, counter });
+
+    let post = await Post.findById(postId);
+    let user = await User.findById(userId);
+
+    if (action === "like") {
+      if (counter === 1) user.likedPosts = [...user.likedPosts, postId];
+      if (counter === -1) user.likedPosts.splice(post._id, 1);
+      if (counter === 2) {
+        user.likedPosts = [...user.likedPosts, postId];
+        user.dislikedPosts.splice(post._id, 1);
+      }
+    } else if (action === "unlike") {
+      if (counter === -1)
+        user.dislikedPosts = [...user.dislikedPosts, post._id];
+      if (counter === 1) user.dislikedPosts.splice(post._id, 1);
+      if (counter === -2) {
+        user.likedPosts.splice(post._id, 1);
+        user.dislikedPosts = [...user.dislikedPosts, post._id];
+      }
+    }
+
+    post.votes = post.votes + counter;
+
+    post.save();
+    user.save();
+  });
+});
 
 app.use(cookieParser());
 app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
@@ -29,6 +91,6 @@ app.use("/api/auth", auth);
 app.use("/api/images/", images);
 
 const port = process.env.PORT || 4000;
-const server = app.listen(port, () => {
+const server = http.listen(port, () => {
   console.log("Listening on port " + port + "...");
 });
