@@ -13,7 +13,7 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/trending", async (req, res) => {
-  const limit = req.query.limit;
+  const limit = parseInt(req.query.limit) || 4;
 
   const community = await Community.find().sort({ members: 1 }).limit(limit);
   res.send(community);
