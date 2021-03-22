@@ -11,6 +11,11 @@ router.get("/", async (req, res) => {
   res.send(community);
 });
 
+router.get("/trending", async (req, res) => {
+  const community = await Community.find().sort({ members: 1 });
+  res.send(community);
+});
+
 router.post("/", auth, async (req, res) => {
   const { error } = validate(req.body);
   if (error) {
