@@ -4,10 +4,18 @@ const { Community, validate } = require("../models/Community");
 const { User } = require("../models/User");
 const auth = require("../middleware/auth");
 const isAdmin = require("../middleware/isAdmin");
+const querystring = require("querystring");
 
 router.get("/", async (req, res) => {
   const community = await Community.find();
   community.reverse();
+  res.send(community);
+});
+
+router.get("/trending", async (req, res) => {
+  const limit = req.query.limit;
+
+  const community = await Community.find().sort({ members: 1 }).limit(limit);
   res.send(community);
 });
 
