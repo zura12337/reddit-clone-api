@@ -18,6 +18,7 @@ const postSchema = new Schema({
   image: {
     type: String,
   },
+  url: String,
   postedTo: {
     type: Schema.Types.ObjectId,
     ref: "Community",
@@ -43,6 +44,7 @@ function validatePost(post) {
     title: Joi.string().required(),
     body: Joi.string().required(),
     image: Joi.string(),
+    url: Joi.string(),
     postedTo: Joi.string().required(),
     postedBy: Joi.string(),
     postedAt: Joi.string(),
