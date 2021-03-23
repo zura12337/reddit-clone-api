@@ -4,6 +4,8 @@ const { Post, validate } = require("../models/Post");
 const { User } = require("../models/User");
 const { Community } = require("../models/Community");
 
+const { getLinkPreview, getPreviewFromContent } = require("link-preview-js");
+
 const auth = require("../middleware/auth");
 
 router.get("/", async (req, res) => {
@@ -29,18 +31,23 @@ router.post("/", auth, async (req, res) => {
   let community = await Community.findById(req.body.postedTo);
   if (!community) res.status(404).send("No community found");
 
+  let urlData;
+
+  if (req.body.url) {
+    urlData = await getLinkPreview(req.body.url);
+  }
+
   let post = new Post(req.body);
   post.votes = 0;
   post.postedBy = req.user._id;
+  post.urlData = urlData;
   community.posts = [...community.posts, post._id];
   community.save();
   post.save((error) => {
     if (!error) {
       Post.find({})
         .populate("postedBy")
-        .exec(function (error, posts) {
-          console.log(posts);
-        });
+        .exec(function (error, posts) {});
     }
   });
 
