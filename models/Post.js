@@ -15,9 +15,7 @@ const postSchema = new Schema({
     type: String,
     required: true,
   },
-  image: {
-    type: String,
-  },
+  image: String,
   url: String,
   postedTo: {
     type: Schema.Types.ObjectId,
@@ -41,11 +39,11 @@ const postSchema = new Schema({
 
 function validatePost(post) {
   const schema = Joi.object({
-    title: Joi.string().required(),
-    body: Joi.string().required(),
-    image: Joi.string(),
+    title: Joi.string().required().label("Title"),
+    body: Joi.string().required().label("Description"),
+    image: Joi.string().label("Image"),
     url: Joi.string(),
-    postedTo: Joi.string().required(),
+    postedTo: Joi.string().required().label("PostedTo"),
     postedBy: Joi.string(),
     postedAt: Joi.string(),
     votes: Joi.number(),
