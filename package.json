@@ -18,6 +18,7 @@
     "express": "^4.17.1",
     "joi": "^17.3.0",
     "jsonwebtoken": "^8.5.1",
+    "link-preview-js": "^2.1.6",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "mongoose": "^5.11.13",
