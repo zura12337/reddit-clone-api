@@ -4,7 +4,7 @@ const { Post, validate } = require("../models/Post");
 const { User } = require("../models/User");
 const { Community } = require("../models/Community");
 
-const { getLinkPreview, getPreviewFromContent } = require("link-preview-js");
+const { getLinkPreview } = require("link-preview-js");
 
 const auth = require("../middleware/auth");
 

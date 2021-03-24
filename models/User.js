@@ -18,6 +18,7 @@ const userSchema = new Schema({
   following: [{ type: Schema.Types.ObjectId, ref: "User" }],
   joined: [{ type: Schema.Types.ObjectId, ref: "Community" }],
   createdCommunities: [{ type: Schema.Types.ObjectId, ref: "Community" }],
+  drafts: [{ type: Schema.Types.ObjectId, ref: "DraftPost" }],
 });
 
 userSchema.plugin(deepPopulate);
@@ -41,6 +42,7 @@ function validateUser(user) {
     following: Joi.array().label("Following"),
     joined: Joi.string(),
     createdCommunities: Joi.string(),
+    drafts: Joi.object(),
   });
   return schema.validate(user);
 }
