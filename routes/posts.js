@@ -38,16 +38,16 @@ router.post("/", auth, async (req, res) => {
   }
 
   let post = new Post(req.body);
-  post.votes = 0;
+  if (!post.hideVotes) {
+    post.votes = 0;
+  }
   post.postedBy = req.user._id;
   post.urlData = urlData;
   community.posts = [...community.posts, post._id];
   community.save();
   post.save((error) => {
     if (!error) {
-      Post.find({})
-        .populate("postedBy")
-        .exec(function (error, posts) {});
+      Post.find({}).populate("postedBy");
     }
   });
 
