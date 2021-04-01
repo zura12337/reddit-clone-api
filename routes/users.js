@@ -48,6 +48,10 @@ router.post("/", async (req, res) => {
   const salt = await bcrypt.genSalt(10);
 
   user.password = await bcrypt.hash(user.password, salt);
+  if (!user.coverImage) {
+    user.coverImage =
+      "https://www.zipjob.com/blog/wp-content/uploads/2020/08/linkedin-default-background-cover-photo-1.png";
+  }
 
   await user.save();
 
@@ -73,7 +77,7 @@ router.put("/", auth, async (req, res) => {
 
   user = _.extend(user, req.body);
 
-  user.save();
+  await user.save();
 
   res.send();
 });
@@ -288,6 +292,19 @@ router.post("/reset-password/submit", async (req, res) => {
 
   await user.save();
   res.send("Password changed succesfully");
+});
+
+router.post("/update-mail", auth, async (req, res) => {
+  let user = await User.findById(req.user._id);
+
+  const validPassword = await bcrypt.compare(req.body.password, user.password);
+  if (!validPassword) return res.status(400).send("Invalid password.");
+
+  if (validPassword) {
+    user.email = req.body.newEmail;
+    await user.save();
+    res.send("Email changed succesfully.");
+  }
 });
 
 module.exports = router;
