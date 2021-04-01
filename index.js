@@ -44,7 +44,7 @@ io.on("connection", function (sockets) {
       status = "";
     }
 
-    io.emit("post-vote", { status, counter });
+    io.emit("post-vote", { status, counter, postId });
 
     let post = await Post.findById(postId);
     let user = await User.findById(userId);
@@ -65,8 +65,9 @@ io.on("connection", function (sockets) {
         user.dislikedPosts = [...user.dislikedPosts, post._id];
       }
     }
-
-    post.votes = post.votes + counter;
+    if (post.votes) {
+      post.votes = post.votes + counter;
+    }
 
     post.save();
     user.save();
