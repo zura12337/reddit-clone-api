@@ -7,6 +7,7 @@ const { Schema } = mongoose;
 
 const userSchema = new Schema({
   username: { type: String, required: true },
+  displayName: { type: String },
   email: { type: String, required: true },
   password: { type: String, required: true },
   description: { type: String },
@@ -31,6 +32,7 @@ userSchema.methods.generateAuthToken = function () {
 function validateUser(user) {
   const schema = Joi.object({
     username: Joi.string().min(5).required().label("Name"),
+    displayName: Joi.string().min(3).label("Display Name"),
     email: Joi.string().email().required().label("Email"),
     password: Joi.string().min(4).required().label("Password"),
     description: Joi.string().min(10).label("Description"),
