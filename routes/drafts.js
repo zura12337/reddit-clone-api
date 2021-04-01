@@ -25,4 +25,16 @@ router.post("/", auth, async (req, res) => {
   res.send(draftPost);
 });
 
+router.delete("/:id", auth, async (req, res) => {
+  let user = await User.findById(req.user._id);
+
+  if (user.drafts.includes(req.params.id)) {
+    await DraftPost.findByIdAndDelete(req.params.id);
+    user.drafts.splice(req.params.id, 1);
+    user.save();
+    res.send("Deleted Succesfully.");
+  }
+  res.status(400).send("Can not delete.");
+});
+
 module.exports = router;
