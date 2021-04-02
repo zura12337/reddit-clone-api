@@ -6,6 +6,7 @@ const community = require("./routes/community");
 const auth = require("./routes/auth");
 const images = require("./routes/images");
 const drafts = require("./routes/drafts");
+const category = require("./routes/category");
 var cors = require("cors");
 const cookieParser = require("cookie-parser");
 const app = express();
@@ -91,6 +92,7 @@ app.use("/api/community", community);
 app.use("/api/auth", auth);
 app.use("/api/images/", images);
 app.use("/api/drafts/", drafts);
+app.use("/api/category/", category);
 
 const port = process.env.PORT || 4000;
 const server = http.listen(port, () => {
