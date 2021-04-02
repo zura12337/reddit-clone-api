@@ -13,6 +13,7 @@ const userSchema = new Schema({
   description: { type: String },
   image: { type: String },
   coverImage: { type: String },
+  posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
   likedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
   dislikedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
   followers: [{ type: Schema.Types.ObjectId, ref: "User" }],

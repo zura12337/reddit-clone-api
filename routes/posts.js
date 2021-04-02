@@ -28,6 +28,8 @@ router.post("/", auth, async (req, res) => {
   const { error } = validate(req.body);
   if (error) res.status(400).send(error.details[0].message);
 
+  let user = await User.findById(req.user._id);
+
   let community = await Community.findById(req.body.postedTo);
   if (!community) res.status(404).send("No community found");
 
@@ -41,10 +43,12 @@ router.post("/", auth, async (req, res) => {
   if (!post.hideVotes) {
     post.votes = 0;
   }
+  user.posts = [...user.posts, post];
   post.postedBy = req.user._id;
   post.urlData = urlData;
   community.posts = [...community.posts, post._id];
   community.save();
+  user.save();
   post.save((error) => {
     if (!error) {
       Post.find({}).populate("postedBy");

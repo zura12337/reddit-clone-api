@@ -7,6 +7,8 @@ const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 
 const { User, validate } = require("../models/User");
+const { Community } = require("../models/Community");
+const { Post } = require("../models/Post");
 
 /**
  ** GET
@@ -305,6 +307,24 @@ router.post("/update-mail", auth, async (req, res) => {
     await user.save();
     res.send("Email changed succesfully.");
   }
+});
+
+router.delete("/", auth, async (req, res) => {
+  let user = await User.findById(req.user._id);
+  if (user.createdCommunities) {
+    user.createdCommunities.forEach(async (communityId) => {
+      await Community.findByIdAndDelete(communityId);
+    });
+  }
+  if (user.posts) {
+    user.posts.forEach(async (postId) => {
+      await Post.findByIdAndDelete(postId);
+    });
+  }
+
+  await User.deleteOne({ _id: req.user._id });
+
+  res.send("Deleted succesfully.");
 });
 
 module.exports = router;
