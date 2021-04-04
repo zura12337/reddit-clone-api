@@ -17,7 +17,7 @@ router.post("/", auth, async (req, res) => {
   const { error } = validate(req.body);
   if (error) res.status(400).send(error.details[0].message);
 
-  let category = await Category.find({ name: req.body.name });
+  let category = await Category.findOne({ name: req.body.name });
   if (category) res.status(400).send("Category already exists.");
 
   category = await new Category(req.body);
