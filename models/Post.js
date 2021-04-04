@@ -35,7 +35,7 @@ const postSchema = new Schema({
     type: Number,
   },
   hideVotes: Boolean,
-  category: [{ type: Schema.Types.ObjectId, ref: "Category" }],
+  category: [{ type: String, ref: "Category" }],
 });
 
 function validatePost(post) {
@@ -50,7 +50,7 @@ function validatePost(post) {
     postedAt: Joi.string(),
     votes: Joi.number(),
     hideVotes: Joi.boolean().default(false),
-    category: Joi.string(),
+    category: Joi.array(),
   });
   return schema.validate(post);
 }
