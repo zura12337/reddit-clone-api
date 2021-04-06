@@ -66,12 +66,12 @@ io.on("connection", function (sockets) {
         user.dislikedPosts = [...user.dislikedPosts, post._id];
       }
     }
-    if (post.votes) {
+    if (post.votes !== undefined) {
       post.votes = post.votes + counter;
     }
 
-    post.save();
-    user.save();
+    await post.save();
+    await user.save();
   });
 });
 
