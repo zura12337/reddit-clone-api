@@ -24,8 +24,8 @@ router.get("/", async (req, res) => {
     posts = await Post.find({})
       .populate("postedBy")
       .populate("postedTo")
-      .skip(page * 10)
-      .limit(10);
+      .skip(page * 5)
+      .limit(5);
   }
   posts = posts.reverse();
 
