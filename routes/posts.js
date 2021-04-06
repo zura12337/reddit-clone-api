@@ -7,20 +7,37 @@ const { Community } = require("../models/Community");
 const { getLinkPreview } = require("link-preview-js");
 
 const auth = require("../middleware/auth");
+const querystring = require("querystring");
 
 router.get("/", async (req, res) => {
   let posts;
+  const page = parseInt(req.query.page) || 0;
   if (req.cookies.token) {
     auth(req, res);
     let user = await User.findById(req.user._id);
     posts = await Post.find({ postedTo: { $in: user.joined } })
       .populate("postedBy")
-      .populate("postedTo");
+      .populate("postedTo")
+      .skip(page * 10)
+      .limit(10);
   } else {
-    posts = await Post.find({}).populate("postedBy").populate("postedTo");
+    posts = await Post.find({})
+      .populate("postedBy")
+      .populate("postedTo")
+      .skip(page * 10)
+      .limit(10);
   }
   posts = posts.reverse();
 
+  res.send(posts);
+});
+
+router.get("/trending", async (req, res) => {
+  let posts = await Post.find({
+    $or: [{ image: { $exists: true } }, { url: { $exists: true } }],
+  })
+    .sort({ votes: -1 })
+    .limit(4);
   res.send(posts);
 });
 
