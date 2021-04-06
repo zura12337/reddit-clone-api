@@ -16,18 +16,21 @@ router.get("/", async (req, res) => {
     auth(req, res);
     let user = await User.findById(req.user._id);
     posts = await Post.find({ postedTo: { $in: user.joined } })
+      .sort({ _id: -1 })
       .populate("postedBy")
       .populate("postedTo")
       .skip(page * 10)
       .limit(10);
   } else {
     posts = await Post.find({})
+      .sort({ _id: -1 })
       .populate("postedBy")
       .populate("postedTo")
-      .skip(page * 5)
-      .limit(5);
+      .skip(page * 10)
+      .limit(10);
   }
-  posts = posts.reverse();
+
+  if (posts.length === 0) res.status(404).send("No more posts.");
 
   res.send(posts);
 });
@@ -64,9 +67,9 @@ router.post("/", auth, async (req, res) => {
   post.postedBy = req.user._id;
   post.urlData = urlData;
   community.posts = [...community.posts, post._id];
-  community.save();
-  user.save();
-  post.save((error) => {
+  await community.save();
+  await user.save();
+  await post.save((error) => {
     if (!error) {
       Post.find({}).populate("postedBy");
     }

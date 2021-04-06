@@ -3,7 +3,7 @@ const moment = require("moment");
 const Joi = require("joi");
 
 var now = Date.now();
-var time = moment(now).format("DD-MM-YYYY h:mm");
+var time = moment(now).utc().format("DD-MM-YYYY h:mm");
 const { Schema } = mongoose;
 
 const postSchema = new Schema({
@@ -11,10 +11,7 @@ const postSchema = new Schema({
     type: String,
     required: true,
   },
-  body: {
-    type: String,
-    required: true,
-  },
+  body: String,
   image: String,
   url: String,
   urlData: Object,
@@ -31,6 +28,10 @@ const postSchema = new Schema({
     type: String,
     default: time,
   },
+  date: {
+    type: Number,
+    default: now,
+  },
   votes: {
     type: Number,
   },
@@ -41,13 +42,14 @@ const postSchema = new Schema({
 function validatePost(post) {
   const schema = Joi.object({
     title: Joi.string().required().label("Title"),
-    body: Joi.string().required().label("Description"),
+    body: Joi.string(),
     image: Joi.string().label("Image"),
     url: Joi.string(),
     urlData: Joi.object(),
     postedTo: Joi.string().required().label("PostedTo"),
     postedBy: Joi.string(),
     postedAt: Joi.string(),
+    date: Joi.number(),
     votes: Joi.number(),
     hideVotes: Joi.boolean().default(false),
     category: Joi.array(),
