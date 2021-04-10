@@ -45,8 +45,6 @@ io.on("connection", function (sockets) {
       status = "";
     }
 
-    io.emit("post-vote", { status, counter, postId });
-
     let post = await Post.findById(postId);
     let user = await User.findById(userId);
 
@@ -72,6 +70,8 @@ io.on("connection", function (sockets) {
 
     await post.save();
     await user.save();
+
+    io.emit("post-vote", { status, counter, postId, userId });
   });
 });
 
