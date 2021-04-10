@@ -40,7 +40,9 @@ router.get("/trending", async (req, res) => {
     $or: [{ image: { $exists: true } }, { url: { $exists: true } }],
   })
     .sort({ votes: -1 })
-    .limit(4);
+    .limit(4)
+    .populate("postedBy")
+    .populate("postedTo");
   res.send(posts);
 });
 
@@ -66,7 +68,10 @@ router.post("/", auth, async (req, res) => {
   user.posts = [...user.posts, post];
   post.postedBy = req.user._id;
   post.urlData = urlData;
+
   community.posts = [...community.posts, post._id];
+  community.postsCount += 1;
+
   await community.save();
   await user.save();
   await post.save((error) => {

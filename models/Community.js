@@ -13,10 +13,13 @@ const communitySchema = new Schema({
   image: { type: String },
   cover: { type: String },
   members: { type: [Schema.Types.ObjectId], ref: "User" },
+  membersCount: { type: Number, default: 0 },
   moderators: { type: [Schema.Types.ObjectId], ref: "User" },
   posts: { type: [Schema.Types.ObjectId], ref: "Posts" },
+  postsCount: { type: Number, default: 0 },
   createdBy: { type: Schema.Types.ObjectId, ref: "User" },
   createdAt: { type: String, default: time },
+  category: { type: String },
 });
 
 const Community = mongoose.model("Community", communitySchema);
@@ -29,10 +32,13 @@ function validateCommunity(community) {
     image: Joi.string(),
     cover: Joi.string(),
     members: Joi.string(),
+    membersCount: Joi.number(),
     moderators: Joi.string(),
     posts: Joi.string(),
+    postsCount: Joi.number(),
     createdBy: Joi.string(),
     createdAt: Joi.string(),
+    category: Joi.string(),
   });
   return schema.validate(community);
 }

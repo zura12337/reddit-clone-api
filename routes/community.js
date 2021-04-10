@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { Community, validate } = require("../models/Community");
+const { Category } = require("../models/Category");
 const { User } = require("../models/User");
 const auth = require("../middleware/auth");
 const isAdmin = require("../middleware/isAdmin");
@@ -13,9 +14,22 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/trending", async (req, res) => {
-  const limit = parseInt(req.query.limit) || 4;
+  const limit = parseInt(req.query.limit);
 
-  const community = await Community.find().sort({ members: 1 }).limit(limit);
+  const community = await Community.find()
+    .sort({ membersCount: 1 })
+    .limit(limit ? limit : undefined);
+  res.send(community);
+});
+
+router.get("/trending/:category", async (req, res) => {
+  const community = await Community.find({
+    category: req.params.category,
+  }).sort({
+    membersCount: 1,
+  });
+  if (community.length === 0) res.status(400).send("Communities not found");
+
   res.send(community);
 });
 
@@ -30,7 +44,9 @@ router.post("/", auth, async (req, res) => {
     if (community) {
       res.status(400).send("Community with given name already exists.");
     } else {
-      community = await new Community(req.body);
+      community = await new Community({
+        ...req.body,
+      });
       community.members = [req.user._id];
       community.moderators = [req.user._id];
       community.createdBy = req.user._id;
@@ -91,9 +107,11 @@ router.post("/:id/join", auth, async (req, res) => {
   if (joinedCommunities.indexOf(community._id.toString()) >= 0) {
     user.joined.splice(user.joined.indexOf(community._id.toString()), 1);
     community.members.splice(community.members.indexOf(user._id.toString()), 1);
+    community.membersCount -= 1;
   } else {
     user.joined.push(community._id);
     community.members.push(user._id);
+    community.membersCount += 1;
   }
 
   user.save();
