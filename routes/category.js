@@ -8,9 +8,9 @@ router.get("/", async (req, res) => {
   res.send(categories);
 });
 
-router.get("/:name", async (req, res) => {
-  const categories = await Category.find({ name: req.body.name });
-  res.send(categories);
+router.get("/:value", async (req, res) => {
+  const category = await Category.find({ value: req.params.value });
+  res.send(category);
 });
 
 router.post("/", auth, async (req, res) => {
@@ -21,6 +21,14 @@ router.post("/", auth, async (req, res) => {
   if (category) res.status(400).send("Category already exists.");
 
   category = await new Category(req.body);
+
+  category.value = req.body.name
+    .split(" ")
+    .join("_")
+    .split("&")
+    .join("and")
+    .toLowerCase();
+
   await category.save();
 
   res.send(category);
