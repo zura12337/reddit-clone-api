@@ -20,6 +20,10 @@ const communitySchema = new Schema({
   createdBy: { type: Schema.Types.ObjectId, ref: "User" },
   createdAt: { type: String, default: time },
   category: { type: String },
+  theme: {
+    type: { main: String, highlight: String },
+    default: { main: "#0079D3", highlight: "#0079D3" },
+  },
 });
 
 const Community = mongoose.model("Community", communitySchema);
@@ -39,6 +43,7 @@ function validateCommunity(community) {
     createdBy: Joi.string(),
     createdAt: Joi.string(),
     category: Joi.string(),
+    theme: Joi.object({ main: Joi.string(), highlight: Joi.string() }),
   });
   return schema.validate(community);
 }
