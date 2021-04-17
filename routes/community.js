@@ -1,11 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const { Community, validate } = require("../models/Community");
-const { Category } = require("../models/Category");
 const { User } = require("../models/User");
 const auth = require("../middleware/auth");
 const isAdmin = require("../middleware/isAdmin");
-const querystring = require("querystring");
+const _ = require("lodash");
 
 router.get("/", async (req, res) => {
   const community = await Community.find();
@@ -28,7 +27,7 @@ router.get("/trending/:category", async (req, res) => {
   }).sort({
     membersCount: 1,
   });
-  if (community.length === 0) res.status(400).send("Communities not found");
+  if (community.length == 0) res.status(400).send("Communities not found.");
 
   res.send(community);
 });
@@ -116,6 +115,43 @@ router.post("/:id/join", auth, async (req, res) => {
 
   user.save();
   community.save();
+
+  res.send(community);
+});
+
+router.get("/role/:username", auth, async (req, res) => {
+  const community = await Community.findOne({ username: req.params.username });
+  if (community.moderators.includes(req.user._id)) {
+    res.send("admin");
+  } else {
+    res.send("user");
+  }
+});
+
+router.get("/letter/:letter", async (req, res) => {
+  const lowerCaseLetter = `^${req.params.letter.toLowerCase()}`;
+  const upperCaseLetter = `^${req.params.letter.toUpperCase()}`;
+  const lowerCaseRegex = new RegExp(lowerCaseLetter);
+  const upperCaseRegex = new RegExp(upperCaseLetter);
+  let lowerCaseCommunity = await Community.find({
+    name: { $regex: lowerCaseRegex },
+  });
+  let upperCaseCommunity = await Community.find({
+    name: { $regex: upperCaseRegex },
+  });
+
+  const communities = [...upperCaseCommunity, ...lowerCaseCommunity];
+
+  res.send(communities);
+});
+
+router.put("/:username", auth, isAdmin, async (req, res) => {
+  let community = await Community.findOne({ username: req.params.username });
+  if (!community) return res.status(400).send("Bad request.");
+
+  community = _.extend(community, req.body);
+
+  await community.save();
 
   res.send(community);
 });
