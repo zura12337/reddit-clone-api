@@ -7,6 +7,7 @@ const { Community } = require("../models/Community");
 const { getLinkPreview } = require("link-preview-js");
 
 const auth = require("../middleware/auth");
+const isAdmin = require("../middleware/isAdmin");
 const querystring = require("querystring");
 
 router.get("/", async (req, res) => {
@@ -43,6 +44,19 @@ router.get("/trending", async (req, res) => {
     .limit(4)
     .populate("postedBy")
     .populate("postedTo");
+  res.send(posts);
+});
+
+router.get("/community/:communityUsername", async (req, res) => {
+  let community = await Community.findOne({
+    username: req.params.communityUsername,
+  });
+
+  let posts = await Post.find({ postedTo: community._id })
+    .sort({ date: -1 })
+    .populate("postedBy")
+    .populate("postedTo");
+
   res.send(posts);
 });
 
@@ -90,6 +104,21 @@ router.get("/:id", async (req, res) => {
   if (!post) res.status(404).send("No Post Found with given ID");
 
   res.send(post);
+});
+
+router.delete("/:id", auth, async (req, res) => {
+  let post = await Post.findById(req.params.id);
+  const community = await Community.findById(post.postedTo);
+  const user = await User.findById(req.user._id);
+  post = await Post.findByIdAndDelete(req.params.id);
+
+  user.posts.splice(post, 1);
+  community.posts.splice(post, 1);
+
+  await community.save();
+  await user.save();
+
+  res.send("Post removed succesfully");
 });
 
 module.exports = router;
