@@ -2,7 +2,9 @@ const mongoose = require("mongoose");
 const Joi = require("joi");
 const jwt = require("jsonwebtoken");
 const deepPopulate = require("mongoose-deep-populate")(mongoose);
+const moment = require("moment");
 
+var time = Date.now();
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
@@ -21,6 +23,7 @@ const userSchema = new Schema({
   joined: [{ type: Schema.Types.ObjectId, ref: "Community" }],
   createdCommunities: [{ type: Schema.Types.ObjectId, ref: "Community" }],
   drafts: [{ type: Schema.Types.ObjectId, ref: "DraftPost" }],
+  cakeDay: [{ type: String, default: time }],
 });
 
 userSchema.plugin(deepPopulate);
