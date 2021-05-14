@@ -23,7 +23,7 @@ const userSchema = new Schema({
   joined: [{ type: Schema.Types.ObjectId, ref: "Community" }],
   createdCommunities: [{ type: Schema.Types.ObjectId, ref: "Community" }],
   drafts: [{ type: Schema.Types.ObjectId, ref: "DraftPost" }],
-  cakeDay: [{ type: String, default: time }],
+  cakeDay: { type: String, default: time },
 });
 
 userSchema.plugin(deepPopulate);
