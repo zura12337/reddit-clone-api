@@ -61,6 +61,16 @@ router.post("/", async (req, res) => {
   res.cookie("token", token, { httpOnly: true }).send();
 });
 
+router.get("/role/:username", auth, async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) res.send("anon");
+  if (user.username === req.params.username) {
+    res.send("admin");
+  } else {
+    res.send("auth");
+  }
+});
+
 /**
  ** POST
  * Check if user is already registered
