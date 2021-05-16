@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const deepPopulate = require("mongoose-deep-populate")(mongoose);
 const moment = require("moment");
 
-var time = Date.now();
+var time = Date.now() / 1000;
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
