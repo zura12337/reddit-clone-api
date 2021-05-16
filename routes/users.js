@@ -117,8 +117,9 @@ router.get("/:username", async (req, res) => {
     .populate("joined")
     .populate("following")
     .populate("followers")
+    .populate("posts")
     .deepPopulate(
-      "likedPosts.postedBy, likedPosts.postedTo, dislikedPosts.postedBy, dislikedPosts.postedTo"
+      "likedPosts.postedBy, likedPosts.postedTo, dislikedPosts.postedBy, dislikedPosts.postedTo, posts.postedTo, posts.postedBy"
     )
     .then((user) => {
       res.json(user);
