@@ -31,7 +31,7 @@ router.get("/", async (req, res) => {
       .limit(10);
   }
 
-  if (posts.length === 0) res.status(404).send("No more posts.");
+  if (posts.length === 0) res.send([]);
 
   res.send(posts);
 });
