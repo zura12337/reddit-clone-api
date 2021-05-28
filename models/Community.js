@@ -20,7 +20,7 @@ const communitySchema = new Schema({
   createdBy: { type: Schema.Types.ObjectId, ref: "User" },
   createdAt: { type: String, default: time },
   category: { type: String },
-  rules: { type: Object },
+  rules: [{ type: Schema.Types.ObjectId, ref: "Rule" }],
   theme: {
     type: { main: String, highlight: String },
     default: { main: "#0079D3", highlight: "#0079D3" },
