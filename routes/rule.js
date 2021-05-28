@@ -8,7 +8,7 @@ const { Community } = require("../models/Community");
 router.get("/:username", async (req, res) => {
   const { rules } = await Community.findOne({
     username: req.params.username,
-  });
+  }).populate("rules");
 
   res.send(rules);
 });
@@ -28,9 +28,9 @@ router.post("/:username", auth, isAdmin, async (req, res) => {
       username: req.params.username,
     });
     if (community.rules) {
-      community.rules = [...community.rules, rule];
+      community.rules = [...community.rules, rule._id];
     } else {
-      community.rules = [rule];
+      community.rules = [rule._id];
     }
     await community.save();
     await rule.save();
@@ -48,26 +48,14 @@ router.put("/:username/:rule", auth, isAdmin, async (req, res) => {
       req.body,
       { new: true }
     );
-    const community = await Community.findOne({
-      username: req.params.username,
-    });
 
-    let newRules = community.rules;
-    newRules.filter((rule) => rule.name !== req.params.rule);
-    newRules.push(rule);
-
-    community.rules = newRules;
-
-    await community.save();
     await rule.save();
 
-    res.send(newRules);
+    res.send(rule);
   }
 });
 
 router.post("/:username/reorderRules", auth, isAdmin, async (req, res) => {
-  console.log(req.body);
-
   const community = await Community.findOneAndUpdate(
     {
       username: req.params.username,
@@ -85,11 +73,6 @@ router.delete("/:username/:rule", auth, isAdmin, async (req, res) => {
   }).populate("rules");
   await Rule.findOneAndRemove({ name: req.params.rule });
 
-  let newRules = community.rules;
-  newRules.filter((rule) => rule.name !== req.params.rule);
-  community.rules = newRules;
-
-  await community.save();
   res.send("Deleted");
 });
 
