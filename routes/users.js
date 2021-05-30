@@ -338,4 +338,12 @@ router.delete("/", auth, async (req, res) => {
   res.send("Deleted succesfully.");
 });
 
+router.put("/activeStatus", auth, async (req, res) => {
+  const user = await User.findById(req.user._id);
+  user.active = !user.active;
+  await user.save();
+
+  res.send(user.active);
+});
+
 module.exports = router;

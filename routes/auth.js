@@ -11,6 +11,10 @@ router.post("/", async (req, res) => {
   const validPassword = await bcrypt.compare(req.body.password, user.password);
   if (!validPassword) return res.status(400).send("Invalid Email or Password");
 
+  user.active = true;
+
+  await user.save();
+
   const token = user.generateAuthToken();
 
   res.cookie("token", token, { httpOnly: true }).send(token);
@@ -22,6 +26,9 @@ router.post("/google", async (req, res) => {
 
   let user = await User.findOne({ email: decoded.email });
   if (!user) return res.status(400).send("User not registered");
+
+  user.active = true;
+  await user.save();
 
   const currentTime = Math.floor(Date.now() / 1000);
   if (currentTime < decoded.exp) {
