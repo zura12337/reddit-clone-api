@@ -142,9 +142,24 @@ router.post("/notification/:to", auth, async (req, res) => {
 router.get("/notifications", auth, async (req, res) => {
   const { notifications } = await User.findById(req.user._id)
     .select("notifications")
-    .deepPopulate("notifications.from, notifications.to");
+    .populate([
+      {
+        path: "notifications.from",
+        model: "User",
+      },
+      {
+        path: "notifications.to",
+        model: "User",
+      },
+    ]);
 
-  res.send(notifications);
+  let unread = 0;
+
+  notifications.forEach((notification) => {
+    !notification.seen ? unread++ : (unread = unread);
+  });
+
+  res.send({ unread, notifications });
 });
 
 /**
