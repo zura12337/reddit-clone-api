@@ -340,7 +340,9 @@ router.delete("/", auth, async (req, res) => {
 
 router.put("/activeStatus", auth, async (req, res) => {
   const user = await User.findById(req.user._id);
-  user.active = !user.active;
+
+  user.active = req.body.active;
+
   await user.save();
 
   res.send(user.active);
