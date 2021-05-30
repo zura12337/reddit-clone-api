@@ -103,6 +103,50 @@ router.get("/logout", auth, async (req, res) => {
   res.clearCookie("token").send();
 });
 
+router.post("/notification/:to", auth, async (req, res) => {
+  let destinationUser = await User.findOne({ username: req.params.to });
+
+  const { title, description } = req.body;
+
+  const date = Date.now();
+  const notification = {
+    title,
+    description,
+    from: req.user._id,
+    to: destinationUser._id,
+    date,
+    seen: false,
+  };
+
+  if (
+    destinationUser.notifications &&
+    destinationUser.notifications.length > 0
+  ) {
+    destinationUser.notifications = [
+      ...destinationUser.notifications,
+      notification,
+    ];
+  } else {
+    destinationUser.notifications = [notification];
+  }
+
+  await destinationUser.save();
+
+  destinationUser = await User.findOne({ username: req.params.to })
+    .select("notifications")
+    .deepPopulate("notifications.from, notifications.to");
+
+  res.send(destinationUser);
+});
+
+router.get("/notifications", auth, async (req, res) => {
+  const { notifications } = await User.findById(req.user._id)
+    .select("notifications")
+    .deepPopulate("notifications.from, notifications.to");
+
+  res.send(notifications);
+});
+
 /**
  * * GET
  * Get User by given ID
