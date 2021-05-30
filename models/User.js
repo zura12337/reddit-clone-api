@@ -25,6 +25,16 @@ const userSchema = new Schema({
   createdCommunities: [{ type: Schema.Types.ObjectId, ref: "Community" }],
   drafts: [{ type: Schema.Types.ObjectId, ref: "DraftPost" }],
   cakeDay: { type: String, default: time },
+  notifications: [
+    {
+      title: String,
+      description: String,
+      from: { type: Schema.Types.ObjectId, ref: "User" },
+      to: { type: Schema.Types.ObjectId, ref: "User" },
+      date: String,
+      seen: { type: Boolean, default: false },
+    },
+  ],
 });
 
 userSchema.plugin(deepPopulate);
@@ -51,6 +61,7 @@ function validateUser(user) {
     joined: Joi.string(),
     createdCommunities: Joi.string(),
     drafts: Joi.object(),
+    notifications: Joi.object(),
   });
   return schema.validate(user);
 }
