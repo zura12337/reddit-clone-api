@@ -84,10 +84,26 @@ router.get("/:username", async (req, res) => {
     .populate({ path: "posts.postedBy", model: "User" })
     .populate({ path: "members", model: "User" })
     .populate({ path: "moderators", model: "User" })
+    .populate({ path: "invitedModerators", model: "User" })
     .populate({ path: "createdBy", model: "User" })
     .then((community) => {
       res.send(community);
     });
+});
+
+router.put("/invite-mod/", auth, async (req, res) => {
+  const user = await User.findOne({ username: req.body.username });
+  const community = await Community.findById(req.body.id);
+
+  if (community.invitedModerators) {
+    community.invitedModerators = [user._id, ...community.invitedModerators];
+  } else {
+    community.invitedModerators = [uesr._id];
+  }
+
+  await community.save();
+
+  res.send(community);
 });
 
 router.post("/:id/join", auth, async (req, res) => {
