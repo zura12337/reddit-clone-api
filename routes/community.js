@@ -5,6 +5,8 @@ const { User } = require("../models/User");
 const auth = require("../middleware/auth");
 const isAdmin = require("../middleware/isAdmin");
 const _ = require("lodash");
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 
 router.get("/", async (req, res) => {
   const community = await Community.find();
@@ -102,6 +104,27 @@ router.put("/invite-mod/", auth, async (req, res) => {
   }
 
   await community.save();
+
+  res.send(community);
+});
+
+router.post("/invite-mod/", auth, async (req, res) => {
+  const user = await User.findById(req.user._id);
+  const community = await Community.findById(req.body.id);
+
+  community.invitedModerators = community.invitedModerators.filter(
+    (moderator) => !moderator.equals(req.user._id)
+  );
+
+  if (req.body.answer) {
+    community.moderators = [req.user._id, ...community.moderators];
+
+    user.createdCommunities = user.createdCommunities
+      ? [community._id, ...user.createdCommunities]
+      : [community._id];
+  }
+  await community.save();
+  await user.save();
 
   res.send(community);
 });

@@ -66,7 +66,7 @@ function validateUser(user) {
     joined: Joi.string(),
     createdCommunities: Joi.string(),
     drafts: Joi.object(),
-    notifications: Joi.object(),
+    notifications: Joi.any(),
   });
   return schema.validate(user);
 }
