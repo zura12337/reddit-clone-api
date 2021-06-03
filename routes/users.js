@@ -107,6 +107,8 @@ router.get("/logout", auth, async (req, res) => {
 
 router.post("/notification/:to", auth, async (req, res) => {
   let destinationUser = await User.findOne({ username: req.params.to });
+  if (!destinationUser)
+    return res.status(400).send("User not found with given username");
 
   const { title, description, type, more } = req.body;
 
@@ -179,6 +181,23 @@ router.get("/notifications", auth, async (req, res) => {
   });
 
   res.send({ unread, notifications });
+});
+
+router.get("/seen/:id", auth, async (req, res) => {
+  const user = await User.findById(req.user._id).select("notifications");
+
+  let unread = 0;
+
+  user.notifications.forEach((notification) => {
+    if (notification._id.equals(req.params.id)) {
+      notification.seen = true;
+    }
+    !notification.seen ? unread++ : (unread = unread);
+  });
+
+  await user.save();
+
+  res.send({ unread, notifications: user.notifications });
 });
 
 /**

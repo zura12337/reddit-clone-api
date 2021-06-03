@@ -93,24 +93,45 @@ router.get("/:username", async (req, res) => {
     });
 });
 
-router.put("/invite-mod/", auth, async (req, res) => {
-  const user = await User.findOne({ username: req.body.username });
+router.post("/invite-mod/", auth, async (req, res) => {
+  const user = await User.findOne(
+    { username: req.body.username },
+    (err, user) => {
+      if (!user) {
+        return res.status(400).send("User not found with given username");
+      }
+    }
+  );
   const community = await Community.findById(req.body.id);
 
-  if (community.invitedModerators) {
+  community.moderators.forEach((moderator) => {
+    if (moderator.equals(user._id)) {
+      return res
+        .status(400)
+        .send(`User is already r/${community.username}'s moderator.`);
+    } else {
+    }
+  });
+
+  if (user && community.invitedModerators) {
     community.invitedModerators = [user._id, ...community.invitedModerators];
-  } else {
+  } else if (user) {
     community.invitedModerators = [uesr._id];
   }
 
   await community.save();
 
-  res.send(community);
+  return res.send(community);
 });
 
-router.post("/invite-mod/", auth, async (req, res) => {
-  const user = await User.findById(req.user._id);
-  const community = await Community.findById(req.body.id);
+router.post("/answer-mod/", auth, async (req, res) => {
+  let user;
+  if (req.body.userId) {
+    user = await User.findById(req.body.userId);
+  } else {
+    user = await User.findById(req.user._id);
+  }
+  const community = await Community.findById(req.body.communityId);
 
   community.invitedModerators = community.invitedModerators.filter(
     (moderator) => !moderator.equals(req.user._id)
