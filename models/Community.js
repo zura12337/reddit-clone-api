@@ -25,6 +25,7 @@ const communitySchema = new Schema({
   flairs: [
     {
       id: String,
+      text: String,
       backgroundColor: String,
       textColor: String,
       CSSClass: String,
