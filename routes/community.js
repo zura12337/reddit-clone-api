@@ -5,6 +5,8 @@ const { User } = require("../models/User");
 const auth = require("../middleware/auth");
 const isAdmin = require("../middleware/isAdmin");
 const _ = require("lodash");
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 
 router.get("/", async (req, res) => {
   const community = await Community.find();
@@ -84,10 +86,68 @@ router.get("/:username", async (req, res) => {
     .populate({ path: "posts.postedBy", model: "User" })
     .populate({ path: "members", model: "User" })
     .populate({ path: "moderators", model: "User" })
+    .populate({ path: "invitedModerators", model: "User" })
     .populate({ path: "createdBy", model: "User" })
     .then((community) => {
       res.send(community);
     });
+});
+
+router.post("/invite-mod/", auth, async (req, res) => {
+  const user = await User.findOne(
+    { username: req.body.username },
+    (err, user) => {
+      if (!user) {
+        return res.status(400).send("User not found with given username");
+      }
+    }
+  );
+  const community = await Community.findById(req.body.id);
+
+  community.moderators.forEach((moderator) => {
+    if (moderator.equals(user._id)) {
+      return res
+        .status(400)
+        .send(`User is already r/${community.username}'s moderator.`);
+    } else {
+    }
+  });
+
+  if (user && community.invitedModerators) {
+    community.invitedModerators = [user._id, ...community.invitedModerators];
+  } else if (user) {
+    community.invitedModerators = [uesr._id];
+  }
+
+  await community.save();
+
+  return res.send(community);
+});
+
+router.post("/answer-mod/", auth, async (req, res) => {
+  let user;
+  if (req.body.userId) {
+    user = await User.findById(req.body.userId);
+  } else {
+    user = await User.findById(req.user._id);
+  }
+  const community = await Community.findById(req.body.communityId);
+
+  community.invitedModerators = community.invitedModerators.filter(
+    (moderator) => !moderator.equals(req.user._id)
+  );
+
+  if (req.body.answer) {
+    community.moderators = [req.user._id, ...community.moderators];
+
+    user.createdCommunities = user.createdCommunities
+      ? [community._id, ...user.createdCommunities]
+      : [community._id];
+  }
+  await community.save();
+  await user.save();
+
+  res.send(community);
 });
 
 router.post("/:id/join", auth, async (req, res) => {

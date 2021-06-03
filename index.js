@@ -16,6 +16,7 @@ const path = require("path");
 const { Post } = require("./models/Post");
 const { User } = require("./models/User");
 const io = require("socket.io")(http);
+const bodyParser = require("body-parser");
 
 require("dotenv").config();
 
@@ -76,6 +77,7 @@ io.on("connection", function (sockets) {
   });
 });
 
+app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.json());

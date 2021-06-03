@@ -33,6 +33,11 @@ const userSchema = new Schema({
       to: { type: Schema.Types.ObjectId, ref: "User" },
       date: String,
       seen: { type: Boolean, default: false },
+      type: { type: String },
+      more: {
+        community: { type: Schema.Types.ObjectId, ref: "Community" },
+        url: { type: String },
+      },
     },
   ],
 });
@@ -61,7 +66,7 @@ function validateUser(user) {
     joined: Joi.string(),
     createdCommunities: Joi.string(),
     drafts: Joi.object(),
-    notifications: Joi.object(),
+    notifications: Joi.any(),
   });
   return schema.validate(user);
 }

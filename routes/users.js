@@ -5,6 +5,8 @@ const bcrypt = require("bcrypt");
 const auth = require("../middleware/auth");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 
 const { User, validate } = require("../models/User");
 const { Community } = require("../models/Community");
@@ -105,13 +107,17 @@ router.get("/logout", auth, async (req, res) => {
 
 router.post("/notification/:to", auth, async (req, res) => {
   let destinationUser = await User.findOne({ username: req.params.to });
+  if (!destinationUser)
+    return res.status(400).send("User not found with given username");
 
-  const { title, description } = req.body;
+  const { title, description, type, more } = req.body;
 
   const date = Date.now();
   const notification = {
     title,
     description,
+    type,
+    more,
     from: req.user._id,
     to: destinationUser._id,
     date,
@@ -122,9 +128,11 @@ router.post("/notification/:to", auth, async (req, res) => {
     destinationUser.notifications &&
     destinationUser.notifications.length > 0
   ) {
+    if (destinationUser.notifications.length >= 15)
+      destinationUser.notifications.pop();
     destinationUser.notifications = [
-      ...destinationUser.notifications,
       notification,
+      ...destinationUser.notifications,
     ];
   } else {
     destinationUser.notifications = [notification];
@@ -134,17 +142,62 @@ router.post("/notification/:to", auth, async (req, res) => {
 
   destinationUser = await User.findOne({ username: req.params.to })
     .select("notifications")
-    .deepPopulate("notifications.from, notifications.to");
+    .populate([
+      {
+        path: "notifications.from",
+        model: "User",
+      },
+      {
+        path: "notifications.to",
+        model: "User",
+      },
+    ]);
 
-  res.send(destinationUser);
+  res.send("Notification has been sent.");
 });
 
 router.get("/notifications", auth, async (req, res) => {
   const { notifications } = await User.findById(req.user._id)
     .select("notifications")
-    .deepPopulate("notifications.from, notifications.to");
+    .populate([
+      {
+        path: "notifications.from",
+        model: "User",
+      },
+      {
+        path: "notifications.to",
+        model: "User",
+      },
+      {
+        path: "notifications.more.community",
+        model: "Community",
+      },
+    ]);
 
-  res.send(notifications);
+  let unread = 0;
+
+  notifications.forEach((notification) => {
+    !notification.seen ? unread++ : (unread = unread);
+  });
+
+  res.send({ unread, notifications });
+});
+
+router.get("/seen/:id", auth, async (req, res) => {
+  const user = await User.findById(req.user._id).select("notifications");
+
+  let unread = 0;
+
+  user.notifications.forEach((notification) => {
+    if (notification._id.equals(req.params.id)) {
+      notification.seen = true;
+    }
+    !notification.seen ? unread++ : (unread = unread);
+  });
+
+  await user.save();
+
+  res.send({ unread, notifications: user.notifications });
 });
 
 /**
