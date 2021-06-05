@@ -205,6 +205,36 @@ router.get("/letter/:letter", async (req, res) => {
   res.send(communities);
 });
 
+/**
+ * Flairs
+ */
+
+router.get("/flairs/:username", auth, async (req, res) => {
+  const community = await Community.findOne({
+    username: req.params.username,
+  }).select("flairs");
+  if (!community) return res.status(400).send("Community not found.");
+
+  res.send(community.flairs);
+});
+
+router.post("/new/flair/:username", auth, isAdmin, async (req, res) => {
+  let community = await Community.findOne({ username: req.params.username });
+  if (!community) return res.status(400).send("Community not found.");
+
+  const newFlair = req.body;
+
+  if (community.flairs) {
+    community.flairs = [newFlair, ...community.flairs];
+  } else {
+    community.flairs = [newFlairs];
+  }
+
+  await community.save();
+
+  res.send(community);
+});
+
 router.put("/:username", auth, isAdmin, async (req, res) => {
   let community = await Community.findOne({ username: req.params.username });
   if (!community) return res.status(400).send("Bad request.");

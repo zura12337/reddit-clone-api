@@ -22,6 +22,17 @@ const communitySchema = new Schema({
   createdAt: { type: String, default: time },
   category: { type: String },
   rules: [{ type: Schema.Types.ObjectId, ref: "Rule" }],
+  flairs: [
+    {
+      id: String,
+      text: String,
+      backgroundColor: String,
+      textColor: String,
+      CSSClass: String,
+      ModOnly: Boolean,
+      type: String,
+    },
+  ],
   theme: {
     type: { main: String, highlight: String },
     default: { main: "#0079D3", highlight: "#0079D3" },
@@ -47,6 +58,7 @@ function validateCommunity(community) {
     createdAt: Joi.string(),
     category: Joi.string(),
     rules: Joi.any(),
+    flairs: Joi.object(),
     theme: Joi.object({ main: Joi.string(), highlight: Joi.string() }),
   });
   return schema.validate(community);
