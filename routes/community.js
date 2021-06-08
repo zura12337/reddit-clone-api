@@ -6,10 +6,9 @@ const auth = require("../middleware/auth");
 const isAdmin = require("../middleware/isAdmin");
 const _ = require("lodash");
 const mongoose = require("mongoose");
-const ObjectId = mongoose.Types.ObjectId;
 
 router.get("/", async (req, res) => {
-  const community = await Community.find();
+  const community = await Community.find({ privacy: "public" });
   community.reverse();
   res.send(community);
 });
@@ -17,7 +16,7 @@ router.get("/", async (req, res) => {
 router.get("/trending", async (req, res) => {
   const limit = parseInt(req.query.limit);
 
-  const community = await Community.find()
+  const community = await Community.find({ privacy: "public" })
     .sort({ membersCount: 1 })
     .limit(limit ? limit : undefined);
   res.send(community);
@@ -168,15 +167,19 @@ router.post("/:id/join", auth, async (req, res) => {
     community.members.splice(community.members.indexOf(user._id.toString()), 1);
     community.membersCount -= 1;
   } else {
-    user.joined.push(community._id);
-    community.members.push(user._id);
-    community.membersCount += 1;
+    if (community.privacy === "public") {
+      user.joined.push(community._id);
+      community.members.push(user._id);
+      community.membersCount += 1;
+    } else {
+      return res.send("Request has been sent!");
+    }
   }
 
   user.save();
   community.save();
 
-  res.send(community);
+  return res.send(community);
 });
 
 router.get("/role/:username", auth, async (req, res) => {
