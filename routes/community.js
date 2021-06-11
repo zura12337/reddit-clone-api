@@ -151,10 +151,43 @@ router.post("/answer-mod/", auth, async (req, res) => {
 
 router.post("/:id/join", auth, async (req, res) => {
   let user = await User.findById(req.user._id);
-  if (!user) res.status(400).send("Bad Request.");
+  if (!user) return res.status(400).send("Bad Request.");
 
   let community = await Community.findById(req.params.id);
-  if (!community) res.status(404).send("Community not found.");
+  if (!community) return res.status(404).send("Community not found.");
+
+  let joinedCommunities = [];
+
+  user.joined.forEach((community) => {
+    joinedCommunities.push(community.toString());
+  });
+
+  if (joinedCommunities.indexOf(community._id.toString() < 0)) {
+    if (community.privacy === "public") {
+      user.joined.push(community._id);
+      community.members.push(user._id);
+      community.membersCount += 1;
+    } else {
+      community.pendingMembers.push(user._id);
+      user.pendingCommunities.push(community._id);
+      await community.save();
+      await user.save();
+      return res.send("Request has been sent!");
+    }
+  }
+
+  await community.save();
+  await user.save();
+
+  return res.send(community);
+});
+
+router.post("/:id/leave", auth, async (req, res) => {
+  let user = await User.findById(req.user._id);
+  if (!user) return res.status(400).send("Bad Request.");
+
+  let community = await Community.findById(req.params.id);
+  if (!community) return res.status(404).send("Community not found.");
 
   let joinedCommunities = [];
 
@@ -166,20 +199,38 @@ router.post("/:id/join", auth, async (req, res) => {
     user.joined.splice(user.joined.indexOf(community._id.toString()), 1);
     community.members.splice(community.members.indexOf(user._id.toString()), 1);
     community.membersCount -= 1;
-  } else {
-    if (community.privacy === "public") {
-      user.joined.push(community._id);
-      community.members.push(user._id);
-      community.membersCount += 1;
-    } else {
-      return res.send("Request has been sent!");
-    }
   }
 
-  user.save();
-  community.save();
+  await user.save();
+  await community.save();
 
   return res.send(community);
+});
+
+router.post("/:id/pending/", auth, isAdmin, async (req, res) => {
+  let user = await User.findById(req.body.userId);
+
+  let community = await Community.findById(req.params.id);
+
+  let answer = req.body.answer;
+
+  if (answer === "accepted") {
+    user.joined.push(community._id);
+    community.members.push(user._id);
+    community.membersCount += 1;
+  }
+  community.pendingMembers.splice(
+    community.pendingMembers.indexOf(user._id.toString()),
+    1
+  );
+  user.pendingCommunities.splice(
+    user.pendingCommunities.indexOf(community._id.toString())
+  );
+
+  await community.save();
+  await user.save();
+
+  await res.send(community);
 });
 
 router.get("/role/:username", auth, async (req, res) => {
