@@ -13,6 +13,7 @@ const communitySchema = new Schema({
   image: { type: String },
   cover: { type: String },
   members: { type: [Schema.Types.ObjectId], ref: "User" },
+  pendingMembers: { type: [Schema.Types.ObjectId], ref: "User" },
   membersCount: { type: Number, default: 0 },
   moderators: { type: [Schema.Types.ObjectId], ref: "User" },
   invitedModerators: { type: [Schema.Types.ObjectId], ref: "User" },
@@ -22,6 +23,7 @@ const communitySchema = new Schema({
   createdAt: { type: String, default: time },
   category: { type: String },
   rules: [{ type: Schema.Types.ObjectId, ref: "Rule" }],
+  privacy: { type: String, default: "public" },
   flairs: [
     {
       id: String,
@@ -30,7 +32,7 @@ const communitySchema = new Schema({
       textColor: String,
       CSSClass: String,
       ModOnly: Boolean,
-      type: String,
+      type: { type: String },
     },
   ],
   theme: {
@@ -58,6 +60,7 @@ function validateCommunity(community) {
     createdAt: Joi.string(),
     category: Joi.string(),
     rules: Joi.any(),
+    privacy: Joi.string(),
     flairs: Joi.object(),
     theme: Joi.object({ main: Joi.string(), highlight: Joi.string() }),
   });

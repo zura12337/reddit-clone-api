@@ -88,11 +88,7 @@ router.post("/", auth, async (req, res) => {
 
   await community.save();
   await user.save();
-  await post.save((error) => {
-    if (!error) {
-      Post.find({}).populate("postedBy");
-    }
-  });
+  await post.save();
 
   res.send(post);
 });
@@ -104,6 +100,19 @@ router.get("/:id", async (req, res) => {
   if (!post) res.status(404).send("No Post Found with given ID");
 
   res.send(post);
+});
+
+router.get("/flair/:username/:flairId/", async (req, res) => {
+  let community = await Community.findOne({ username: req.params.username });
+  let posts = await Post.find({ postedTo: community._id })
+    .populate("postedBy")
+    .populate("postedTo");
+
+  posts = posts.filter(
+    (post) => post.flair && post.flair.id === req.params.flairId
+  );
+
+  res.send(posts);
 });
 
 router.delete("/:id", auth, async (req, res) => {
