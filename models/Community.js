@@ -13,6 +13,7 @@ const communitySchema = new Schema({
   image: { type: String },
   cover: { type: String },
   members: { type: [Schema.Types.ObjectId], ref: "User" },
+  pendingMembers: { type: [Schema.Types.ObjectId], ref: "User" },
   membersCount: { type: Number, default: 0 },
   moderators: { type: [Schema.Types.ObjectId], ref: "User" },
   invitedModerators: { type: [Schema.Types.ObjectId], ref: "User" },
