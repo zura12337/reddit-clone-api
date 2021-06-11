@@ -22,9 +22,11 @@ const userSchema = new Schema({
   followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
   following: [{ type: Schema.Types.ObjectId, ref: "User" }],
   joined: [{ type: Schema.Types.ObjectId, ref: "Community" }],
+  pendingCommunities: [{ type: Schema.Types.ObjectId, ref: "Communtiy" }],
   createdCommunities: [{ type: Schema.Types.ObjectId, ref: "Community" }],
   drafts: [{ type: Schema.Types.ObjectId, ref: "DraftPost" }],
   cakeDay: { type: String, default: time },
+  flairs: [{}],
   notifications: [
     {
       title: String,
@@ -64,6 +66,7 @@ function validateUser(user) {
     followers: Joi.array().label("Followers"),
     following: Joi.array().label("Following"),
     joined: Joi.string(),
+    pendingCommunities: Joi.string(),
     createdCommunities: Joi.string(),
     drafts: Joi.object(),
     notifications: Joi.any(),
