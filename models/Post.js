@@ -37,6 +37,7 @@ const postSchema = new Schema({
   },
   hideVotes: Boolean,
   category: [{ type: String, ref: "Category" }],
+  flair: { type: Object },
 });
 
 function validatePost(post) {
@@ -53,6 +54,7 @@ function validatePost(post) {
     votes: Joi.number(),
     hideVotes: Joi.boolean().default(false),
     category: Joi.array(),
+    flair: Joi.object(),
   });
   return schema.validate(post);
 }
