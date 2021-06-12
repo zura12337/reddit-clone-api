@@ -207,10 +207,24 @@ router.post("/:id/leave", auth, async (req, res) => {
   return res.send(community);
 });
 
-router.post("/:id/pending/", auth, isAdmin, async (req, res) => {
+router.get("/:username/pending", auth, isAdmin, async (req, res) => {
+  let community = await Community.findOne({
+    username: req.params.username,
+  })
+    .select("pendingMembers")
+    .populate({ path: "pendingMembers", model: "User" });
+
+  if (community.pendingMembers) {
+    return res.send(community.pendingMembers);
+  } else {
+    return res.send([]);
+  }
+});
+
+router.post("/:username/pending/", auth, isAdmin, async (req, res) => {
   let user = await User.findById(req.body.userId);
 
-  let community = await Community.findById(req.params.id);
+  let community = await Community.findOne({ username: req.params.username });
 
   let answer = req.body.answer;
 
@@ -230,7 +244,7 @@ router.post("/:id/pending/", auth, isAdmin, async (req, res) => {
   await community.save();
   await user.save();
 
-  await res.send(community);
+  await res.send(community.pendingMembers || []);
 });
 
 router.get("/role/:username", auth, async (req, res) => {
