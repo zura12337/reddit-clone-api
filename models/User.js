@@ -22,7 +22,7 @@ const userSchema = new Schema({
   followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
   following: [{ type: Schema.Types.ObjectId, ref: "User" }],
   joined: [{ type: Schema.Types.ObjectId, ref: "Community" }],
-	pendingCommunities: [{ id: { type: Schema.Types.ObjectId, ref: "Community" }, message: String }],
+	pendingCommunities: [{ communit: { type: Schema.Types.ObjectId, ref: "Community" }, message: String }],
   createdCommunities: [{ type: Schema.Types.ObjectId, ref: "Community" }],
   drafts: [{ type: Schema.Types.ObjectId, ref: "DraftPost" }],
   cakeDay: { type: String, default: time },
