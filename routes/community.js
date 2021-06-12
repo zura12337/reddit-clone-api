@@ -168,8 +168,8 @@ router.post("/:id/join", auth, async (req, res) => {
       community.members.push(user._id);
       community.membersCount += 1;
     } else {
-      community.pendingMembers.push({ id: user._id, message: req.body.message });
-      user.pendingCommunities.push({ id: community._id, message: req.body.message });
+      community.pendingMembers.push({ user: user._id, message: req.body.message });
+      user.pendingCommunities.push({ user: community._id, message: req.body.message });
       await community.save();
       await user.save();
       return res.send("Request has been sent!");
@@ -207,12 +207,12 @@ router.post("/:id/leave", auth, async (req, res) => {
   return res.send(community);
 });
 
-router.get("/:username/pending", auth, async (req, res) => {
+router.get("/:username/pending", auth, isAdmin, async (req, res) => {
   let community = await Community.findOne({
     username: req.params.username,
   })
     .select("pendingMembers")
-    .populate({ path: "pendingMembers.id", model: "User" });
+    .populate({ path: "pendingMembers.user", model: "User" });
 
   if (community.pendingMembers) {
     return res.send(community.pendingMembers);
