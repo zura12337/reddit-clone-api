@@ -285,6 +285,20 @@ router.get("/:id/following", async (req, res) => {
     .catch(() => res.status(400).send("Bad Request."));
 });
 
+router.post("/update-password", auth, async(req, res) => {
+  const user = await User.findById(req.user._id);
+  
+  const { oldPassword, newPassword } = req.body;
+  const validPassword = await bcrypt.compare(oldPassword, user.password);
+  if(!validPassword) return res.status(400).send("Invalid password");
+  
+  const salt = await bcrypt.genSalt(10);
+
+  user.password = await bcrypt.hash(newPassword, salt);
+
+  return res.send(user);
+})
+
 router.post("/reset-password", async (req, res) => {
   const email = req.body.email;
   const username = req.body.username;
