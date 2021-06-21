@@ -24,6 +24,7 @@ const communitySchema = new Schema({
   category: { type: String },
   rules: [{ type: Schema.Types.ObjectId, ref: "Rule" }],
   privacy: { type: String, default: "public" },
+  banned: { type: [Schema.Types.ObjectId], ref: "User" },
   flairs: [
     {
       id: String,
@@ -63,6 +64,7 @@ function validateCommunity(community) {
     rules: Joi.any(),
     privacy: Joi.string(),
     flairs: Joi.object(),
+    banned: Joi.array(),
     theme: Joi.object({ main: Joi.string(), highlight: Joi.string() }),
   });
   return schema.validate(community);
