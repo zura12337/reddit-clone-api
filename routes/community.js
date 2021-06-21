@@ -303,6 +303,20 @@ router.post("/new/flair/:username", auth, isAdmin, async (req, res) => {
   res.send(community);
 });
 
+router.post("/ban-user", auth, isAdmin, async (req, res) => {
+  const communtiy = await Community.findById(req.body.communtiyId);
+  if(!community) return res.status(404).send("Community not found.");
+
+  if(community.banned && community.banned.length > 0) {
+    community.banned = [req.body.userId, ...community.banned]
+  } else {
+    community.banned = [req.body.userId];
+  }
+  await community.save();
+  
+  return res.send(community.banned); 
+})
+
 router.put("/:username", auth, isAdmin, async (req, res) => {
   let community = await Community.findOne({ username: req.params.username });
   if (!community) return res.status(400).send("Bad request.");
