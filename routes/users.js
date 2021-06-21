@@ -6,7 +6,7 @@ const auth = require("../middleware/auth");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const ObjectId = mongoose.Types.ObjectId;
+const ejs = require("ejs");
 
 const { User, validate } = require("../models/User");
 const { Community } = require("../models/Community");
@@ -285,13 +285,13 @@ router.get("/:id/following", async (req, res) => {
     .catch(() => res.status(400).send("Bad Request."));
 });
 
-router.post("/update-password", auth, async(req, res) => {
+router.post("/update-password", auth, async (req, res) => {
   const user = await User.findById(req.user._id);
-  
+
   const { oldPassword, newPassword } = req.body;
   const validPassword = await bcrypt.compare(oldPassword, user.password);
-  if(!validPassword) return res.status(400).send("Invalid password");
-  
+  if (!validPassword) return res.status(400).send("Invalid password");
+
   const salt = await bcrypt.genSalt(10);
 
   user.password = await bcrypt.hash(newPassword, salt);
@@ -299,7 +299,7 @@ router.post("/update-password", auth, async(req, res) => {
   await user.save();
 
   return res.send(user);
-})
+});
 
 router.post("/reset-password", async (req, res) => {
   const email = req.body.email;
@@ -308,6 +308,58 @@ router.post("/reset-password", async (req, res) => {
   let user = await User.findOne({ email });
   if (!user) res.status(400).send("User not found.");
   if (user.username !== username) res.status(400).send("User not found.");
+
+  let expire = Math.floor(Date.now() / 1000) + 20 * 60;
+  let payload = { userId: user._id, expire };
+  let token = jwt.sign(payload, process.env.JWT_SECRET);
+
+  var transport = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_MAIL,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+  });
+
+  ejs.renderFile(
+    "./templates/password-reset.ejs",
+    { username: user.username, token, image: user.image },
+    async function (err, html) {
+      if (err) {
+        console.log(err);
+      } else {
+        let message = {
+          from: "zura.reddit@gmail.com",
+          to: email,
+          subject: "Reddit password reset",
+          html,
+        };
+        await transport.sendMail(message, function (err) {
+          if (err) {
+            res.status(400).send(err);
+          } else {
+            res.send("Email has been sent.");
+          }
+        });
+      }
+    }
+  );
+});
+
+router.post("/reset-password/submit", async (req, res) => {
+  let user = await User.findById(req.body.userId);
+  if (!user) res.status(400).send("User not found.");
+
+  const salt = await bcrypt.genSalt(10);
+
+  user.password = await bcrypt.hash(req.body.password, salt);
+
+  await user.save();
+  res.send("Password changed succesfully");
+});
+
+router.post("/request-confirm-email/", auth, async (req, res) => {
+  let user = await User.findById(req.user._id);
 
   var transport = nodemailer.createTransport({
     service: "gmail",
@@ -321,103 +373,29 @@ router.post("/reset-password", async (req, res) => {
   let payload = { userId: user._id, expire };
   let token = jwt.sign(payload, process.env.JWT_SECRET);
 
-  const message = {
-    from: "zura.reddit@gmail.com",
-    to: email,
-    subject: "Reddit password reset",
-    html: `
-<tbody><tr>
-  <td style="width:600px;min-width:600px;font-size:0pt;line-height:0pt;padding:0;margin:0;font-weight:normal">
-    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-      <tbody><tr>
-        <td style="font-size:0pt;line-height:0pt;text-align:left">
-          <table width="100%" border="0" cellspacing="0" cellpadding="0">
-            <tbody><tr>
-              <td class="m_-5098866376438505788mpx-16" style="padding-left:32px;padding-right:32px">
-                <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                  <tbody><tr>
-                    <td class="m_-5098866376438505788mpb-20" style="padding-top:16px;padding-bottom:28px">
-                      <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                        <tbody><tr>
-                          <td class="m_-5098866376438505788mpb-28" style="padding-bottom:34px">
-                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                              <tbody><tr>
-                                <td class="m_-5098866376438505788w-104" width="112" style="font-size:0pt;line-height:0pt;text-align:left"><a href="https://www.reddit.com/" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://www.reddit.com/&amp;source=gmail&amp;ust=1616418368603000&amp;usg=AFQjCNEDgFqjojTxbSHumwfsphMrwTad3Q"><img src="https://ci4.googleusercontent.com/proxy/ek_YRst9zhrJAPOUNmdD7HcqXKAwKpnhjx-qvaID79g0_xu34epyVQCXQT76z3cp3KKi-COutsgegnXI5R4rXZNNhwb5HDo=s0-d-e1-ft#https://www.redditstatic.com/emaildigest/logo@2x.png" width="112" height="39" border="0" alt="" class="CToWUd"></a></td>
-                                <td width="20" style="font-size:0pt;line-height:0pt;text-align:left"></td>
-                                <td style="font-size:0pt;line-height:0pt;text-align:left">
-                                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                    <tbody><tr>
-                                      <td align="right">
-                                        <table border="0" cellspacing="0" cellpadding="0">
-                                          <tbody><tr>
-                                            <td width="16" valign="top" style="font-size:0pt;line-height:0pt;text-align:left"><img src="${user.image}" width="16" height="16" border="0" alt="" class="CToWUd"></td>
-                                            <td width="4" style="font-size:0pt;line-height:0pt;text-align:left"></td>
-                                            <td style="font-size:12px;line-height:14px;font-family:Helvetica,Arial,sans-serif;text-align:left;min-width:auto!important;color:#7a9299"><a href="" style="text-decoration:none;color:#7a9299" target="_blank" data-saferedirecturl=""><span style="text-decoration:none;color:#7a9299">u/${user.username}</span></a></td>
-                                          </tr>
-                                        </tbody></table>
-                                      </td>
-                                    </tr>
-                                  </tbody></table>
-                                </td>
-                              </tr>
-                            </tbody></table>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td class="m_-5098866376438505788mfz-14 m_-5098866376438505788mlh-16 m_-5098866376438505788mpb-20" style="font-size:16px;line-height:18px;color:#000000;font-family:Helvetica,Arial,sans-serif;text-align:left;min-width:auto!important;padding-bottom:28px">
-                            Hi there,
-                            <br><br>
-
-                            Looks like a request was made to reset the password for your ${user.username} Reddit account. No problem! You can reset your password now using the lovely button below.
-                          </td>
-                        </tr>
-                        <tr>
-                          <td class="m_-5098866376438505788mpb-28" align="center" style="padding-bottom:34px">
-                            <table width="214" border="0" cellspacing="0" cellpadding="0">
-                              <tbody><tr>
-                                <td class="m_-5098866376438505788btn-14" bgcolor="#0079d3" style="border-radius:4px;font-size:14px;line-height:18px;color:#ffffff;font-family:Helvetica,Arial,sans-serif;text-align:center;min-width:auto!important"><a href="http://localhost:3000/resetpassword/${token}" style="display:block;padding:8px;text-decoration:none;color:#ffffff" target="_blank" data-saferedirecturl="http://localhost:3000/resetpassword/${token}"><span style="text-decoration:none;color:#ffffff"><strong>Reset Password</strong></span></a></td>
-                              </tr>
-                            </tbody></table>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td class="m_-5098866376438505788mfz-14 m_-5098866376438505788mlh-16 m_-5098866376438505788mpb-20" style="font-size:16px;line-height:18px;color:#000000;font-family:Helvetica,Arial,sans-serif;text-align:left;min-width:auto!important;padding-bottom:28px">
-                            If you didn’t want to reset your password, you can safely ignore this email and carry on as usual. And if you need any more help logging in to your Reddit account, check out our <a href="https://www.reddithelp.com/en/categories/privacy-security/account-security" style="text-decoration:none;color:#006cbf" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://www.reddithelp.com/en/categories/privacy-security/account-security&amp;source=gmail&amp;ust=1616418368604000&amp;usg=AFQjCNFdphHgEyiWJ6up9PtXtQeJjEzb5g"><span style="text-decoration:none;color:#006cbf">Account Security FAQs</span></a> or <a href="https://www.reddithelp.com/en/submit-request" style="text-decoration:none;color:#006cbf" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://www.reddithelp.com/en/submit-request&amp;source=gmail&amp;ust=1616418368604000&amp;usg=AFQjCNFaqoHYCqTs3u78QzFSSVMdioBmRA"><span style="text-decoration:none;color:#006cbf">contact us</span></a>.
-                          </td>
-                        </tr>
-                      </tbody></table>
-                    </td>
-                  </tr>
-                </tbody></table>
-              </td>
-            </tr>
-          </tbody></table>
-        </td>
-      </tr>
-    <tr>
-  </tbody>
-          `,
-  };
-
-  transport.sendMail(message, function (err, info) {
-    if (err) {
-      res.status(400).send(err);
-    } else {
-      res.send("Email has been sent.");
+  ejs.renderFile(
+    "./templates/email-confirm.ejs",
+    { username: user.username, email: user.email, image: user.image, token },
+    async function (err, html) {
+      if (err) {
+        console.log(err);
+      } else {
+        let message = {
+          from: "zura.reddit@gmail.com",
+          to: user.email,
+          subject: "Verify email address",
+          html,
+        };
+        await transport.sendMail(message, function (err) {
+          if (err) {
+            res.status(400).send(err);
+          } else {
+            res.send("Email has been sent.");
+          }
+        });
+      }
     }
-  });
-});
-
-router.post("/reset-password/submit", async (req, res) => {
-  let user = await User.findById(req.body.userId);
-  if (!user) res.status(400).send("User not found.");
-
-  const salt = await bcrypt.genSalt(10);
-
-  user.password = await bcrypt.hash(req.body.password, salt);
-
-  await user.save();
-  res.send("Password changed succesfully");
+  );
 });
 
 router.post("/update-mail", auth, async (req, res) => {
