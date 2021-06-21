@@ -11,7 +11,7 @@ const userSchema = new Schema({
   username: { type: String, required: true },
   displayName: { type: String },
   email: { type: String, required: true },
-  accountConfirmed : { type: Boolean, default: false },
+  emailConfirmed: { type: Boolean, default: false },
   password: { type: String, required: true },
   description: { type: String },
   image: { type: String },
@@ -23,7 +23,12 @@ const userSchema = new Schema({
   followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
   following: [{ type: Schema.Types.ObjectId, ref: "User" }],
   joined: [{ type: Schema.Types.ObjectId, ref: "Community" }],
-	pendingCommunities: [{ communit: { type: Schema.Types.ObjectId, ref: "Community" }, message: String }],
+  pendingCommunities: [
+    {
+      communit: { type: Schema.Types.ObjectId, ref: "Community" },
+      message: String,
+    },
+  ],
   createdCommunities: [{ type: Schema.Types.ObjectId, ref: "Community" }],
   drafts: [{ type: Schema.Types.ObjectId, ref: "DraftPost" }],
   cakeDay: { type: String, default: time },
