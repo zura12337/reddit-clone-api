@@ -303,9 +303,29 @@ router.post("/new/flair/:username", auth, isAdmin, async (req, res) => {
   res.send(community);
 });
 
+router.delete("/flair/:username/:flairId", auth, isAdmin, async (req, res) => {
+  let community = await Community.findOne({ username: req.params.username });
+
+  console.log(community);
+
+  community.flairs = community.flairs.filter((flair) => flair.id !== req.params.flairId)
+
+  await community.save();
+
+  res.send(community.flairs);
+})
+
 router.post("/ban-user", auth, isAdmin, async (req, res) => {
+  const user = await User.findById(req.body.userId);
+  if(!user) return res.status(404).send("User not found.");
+
   const communtiy = await Community.findById(req.body.communtiyId);
   if(!community) return res.status(404).send("Community not found.");
+
+  if(communtiy.joined.includes(req.body.userId)) {
+    community.joined.filter((user) => !user.equals(req.body.userId))
+    user.joined.filter((community) => !community.equals(req.body.communityId));
+  }
 
   if(community.banned && community.banned.length > 0) {
     community.banned = [req.body.userId, ...community.banned]
@@ -313,6 +333,7 @@ router.post("/ban-user", auth, isAdmin, async (req, res) => {
     community.banned = [req.body.userId];
   }
   await community.save();
+  await user.save();
   
   return res.send(community.banned); 
 })
