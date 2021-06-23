@@ -8,8 +8,15 @@ const _ = require("lodash");
 const mongoose = require("mongoose");
 
 router.get("/", async (req, res) => {
-  const community = await Community.find({ privacy: "public" });
+  let community;
+  if(req.cookies.token) {
+    auth(req, res);
+    community = await Community.find({ banned: { "$ne": req.user._id } })
+  } else {
+    community = await Community.find();
+  }
   community.reverse();
+
   res.send(community);
 });
 
@@ -315,16 +322,16 @@ router.delete("/flair/:username/:flairId", auth, isAdmin, async (req, res) => {
   res.send(community.flairs);
 })
 
-router.post("/ban-user", auth, isAdmin, async (req, res) => {
-  const user = await User.findById(req.body.userId);
+router.post("/:id/ban-user", auth, isAdmin, async (req, res) => {
+  let user = await User.findById(req.body.userId);
   if(!user) return res.status(404).send("User not found.");
 
-  const communtiy = await Community.findById(req.body.communtiyId);
+  let community = await Community.findById(req.params.id);
   if(!community) return res.status(404).send("Community not found.");
 
-  if(communtiy.joined.includes(req.body.userId)) {
-    community.joined.filter((user) => !user.equals(req.body.userId))
-    user.joined.filter((community) => !community.equals(req.body.communityId));
+  if(community.members.includes(req.body.userId)) {
+    community.members = community.members.filter((user) => !user.equals(req.body.userId))
+    user.joined = user.joined.filter((community) => !community.equals(req.params.id));
   }
 
   if(community.banned && community.banned.length > 0) {
@@ -335,7 +342,7 @@ router.post("/ban-user", auth, isAdmin, async (req, res) => {
   await community.save();
   await user.save();
   
-  return res.send(community.banned); 
+  return res.send(community); 
 })
 
 router.put("/:username", auth, isAdmin, async (req, res) => {
