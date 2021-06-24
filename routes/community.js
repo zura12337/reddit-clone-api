@@ -329,6 +329,8 @@ router.post("/:id/ban-user", auth, isAdmin, async (req, res) => {
   let community = await Community.findById(req.params.id);
   if(!community) return res.status(404).send("Community not found.");
 
+  if(community.banned.includes(req.body.userId)) return res.status(400).send("Bad request.");
+
   if(community.members.includes(req.body.userId)) {
     community.members = community.members.filter((user) => !user.equals(req.body.userId))
     user.joined = user.joined.filter((community) => !community.equals(req.params.id));
@@ -343,6 +345,22 @@ router.post("/:id/ban-user", auth, isAdmin, async (req, res) => {
   await user.save();
   
   return res.send(community); 
+})
+
+router.delete("/:id/unban-user", auth, isAdmin, async (req, res) => {
+  let user = await User.findById(req.body.userId);
+  if(!user) return res.status(404).send("User not found.");
+
+  let community = await Community.findById(req.params.id);
+  if(!community) return res.status(404).send("Community not found.");
+
+  if(!community.banned.includes(req.body.userId)) return res.status(400).send("Bad request.");
+
+  community.banned = community.banned.filter(user => !user.equals(req.body.userId));
+
+  await community.save();
+
+  res.send(community);
 })
 
 router.put("/:username", auth, isAdmin, async (req, res) => {
