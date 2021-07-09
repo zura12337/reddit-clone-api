@@ -23,7 +23,7 @@ router.get("/", async (req, res) => {
 router.get("/trending", async (req, res) => {
   const limit = parseInt(req.query.limit);
 
-  const community = await Community.find({ privacy: "public" })
+  const community = await Community.find()
     .sort({ membersCount: 1 })
     .limit(limit ? limit : undefined);
   res.send(community);
@@ -256,7 +256,7 @@ router.post("/:username/pending/", auth, isAdmin, async (req, res) => {
 
 router.get("/role/:username", auth, async (req, res) => {
   const community = await Community.findOne({ username: req.params.username });
-  if (community.moderators.includes(req.user._id)) {
+  if (community.moderators && community.moderators.includes(req.user._id)) {
     res.send("admin");
   } else {
     res.send("user");
@@ -329,7 +329,9 @@ router.post("/:id/ban-user", auth, isAdmin, async (req, res) => {
   let community = await Community.findById(req.params.id);
   if(!community) return res.status(404).send("Community not found.");
 
-  if(community.banned.includes(req.body.userId)) return res.status(400).send("Bad request.");
+  community.banned.forEach(bannedUser => {
+    if(bannedUser.userId.equals(req.body.userId)) return res.status(400).send("Bad request.");
+  })
 
   if(community.members.includes(req.body.userId)) {
     community.members = community.members.filter((user) => !user.equals(req.body.userId))
@@ -337,9 +339,9 @@ router.post("/:id/ban-user", auth, isAdmin, async (req, res) => {
   }
 
   if(community.banned && community.banned.length > 0) {
-    community.banned = [req.body.userId, ...community.banned]
+    community.banned = [req.body, ...community.banned]
   } else {
-    community.banned = [req.body.userId];
+    community.banned = [req.body];
   }
   await community.save();
   await user.save();
@@ -354,9 +356,11 @@ router.delete("/:id/unban-user", auth, isAdmin, async (req, res) => {
   let community = await Community.findById(req.params.id);
   if(!community) return res.status(404).send("Community not found.");
 
-  if(!community.banned.includes(req.body.userId)) return res.status(400).send("Bad request.");
+  community.banned.forEach(bannedUser => {
+    if(bannedUser.user.equals(req.body.userId)) return res.status(400).send("Bad request.");
+  })
 
-  community.banned = community.banned.filter(user => !user.equals(req.body.userId));
+  community.banned = community.banned.filter(bannedUser => !bannedUser.userId.equals(req.body.userId));
 
   await community.save();
 

@@ -31,7 +31,7 @@ router.get("/", async (req, res) => {
       .limit(10);
   }
 
-  if (posts.length === 0) res.send([]);
+  if (posts.length === 0) return res.send([]);
 
   res.send(posts);
 });
