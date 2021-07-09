@@ -5,7 +5,22 @@ const { User } = require("../models/User");
 const auth = require("../middleware/auth");
 const isAdmin = require("../middleware/isAdmin");
 const _ = require("lodash");
-const mongoose = require("mongoose");
+const cron = require("node-cron");
+
+cron.schedule("* * * * *", async () => {
+  const communities = await Community.find({});
+  const date = Math.floor(Date.now() / 1000);
+  communities.forEach(async community => {
+    if(community.banned && community.banned.length > 0) {
+      community.banned.forEach((bannedUser, i) => {
+        if(bannedUser.until < date) {
+          community.banned.splice(i, 1);
+        }
+      })
+    }
+    await community.save();
+  })
+})
 
 router.get("/", async (req, res) => {
   let community;
@@ -338,10 +353,15 @@ router.post("/:id/ban-user", auth, isAdmin, async (req, res) => {
     user.joined = user.joined.filter((community) => !community.equals(req.params.id));
   }
 
+  const bannedUser = req.body;
+
+  let length = parseInt(bannedUser.until);
+  bannedUser.until = Math.floor(Date.now() / 1000) + length;
+
   if(community.banned && community.banned.length > 0) {
-    community.banned = [req.body, ...community.banned]
+    community.banned = [bannedUser, ...community.banned]
   } else {
-    community.banned = [req.body];
+    community.banned = [bannedUser];
   }
   await community.save();
   await user.save();
@@ -356,8 +376,8 @@ router.delete("/:id/unban-user", auth, isAdmin, async (req, res) => {
   let community = await Community.findById(req.params.id);
   if(!community) return res.status(404).send("Community not found.");
 
-  community.banned.forEach(bannedUser => {
-    if(bannedUser.user.equals(req.body.userId)) return res.status(400).send("Bad request.");
+  community.banned.forEach(() => {
+    if(!user._id.equals(req.body.userId)) return res.status(400).send("Bad request.");
   })
 
   community.banned = community.banned.filter(bannedUser => !bannedUser.userId.equals(req.body.userId));

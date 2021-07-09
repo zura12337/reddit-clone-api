@@ -27,7 +27,7 @@ const communitySchema = new Schema({
   banned: [{
     userId: { type: Schema.Types.ObjectId, ref: "User" },
     note: String,
-    length: Number,
+    until: Number,
     reason: { type: Schema.Types.ObjectId, ref: "Rule" },
     message: String,
   }],
