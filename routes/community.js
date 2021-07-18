@@ -10,23 +10,25 @@ const cron = require("node-cron");
 cron.schedule("* * * * *", async () => {
   const communities = await Community.find({});
   const date = Math.floor(Date.now() / 1000);
-  communities.forEach(async community => {
-    if(community.banned && community.banned.length > 0) {
+  communities.forEach(async (community) => {
+    if (community.banned && community.banned.length > 0) {
       community.banned.forEach((bannedUser, i) => {
-        if(bannedUser.until < date) {
-          community.banned.splice(i, 1);
+        if (!bannedUser.permanent) {
+          if (bannedUser.until < date) {
+            community.banned.splice(i, 1);
+          }
         }
-      })
+      });
     }
     await community.save();
-  })
-})
+  });
+});
 
 router.get("/", async (req, res) => {
   let community;
-  if(req.cookies.token) {
+  if (req.cookies.token) {
     auth(req, res);
-    community = await Community.find({ banned: { "$ne": req.user._id } })
+    community = await Community.find({ banned: { $ne: req.user._id } });
   } else {
     community = await Community.find();
   }
@@ -190,8 +192,14 @@ router.post("/:id/join", auth, async (req, res) => {
       community.members.push(user._id);
       community.membersCount += 1;
     } else {
-      community.pendingMembers.push({ user: user._id, message: req.body.message });
-      user.pendingCommunities.push({ user: community._id, message: req.body.message });
+      community.pendingMembers.push({
+        user: user._id,
+        message: req.body.message,
+      });
+      user.pendingCommunities.push({
+        user: community._id,
+        message: req.body.message,
+      });
       await community.save();
       await user.save();
       return res.send("Request has been sent!");
@@ -330,62 +338,87 @@ router.delete("/flair/:username/:flairId", auth, isAdmin, async (req, res) => {
 
   console.log(community);
 
-  community.flairs = community.flairs.filter((flair) => flair.id !== req.params.flairId)
+  community.flairs = community.flairs.filter(
+    (flair) => flair.id !== req.params.flairId
+  );
 
   await community.save();
 
   res.send(community.flairs);
-})
+});
+
+router.get("/:username/banned", auth, isAdmin, async (req, res) => {
+  let community = await Community.findOne({ username: req.params.username })
+    .select("banned")
+    .populate("banned.user")
+    .populate("banned.reason");
+  if (!community) return res.status(404).send("Community not found.");
+
+  res.send(community.banned);
+});
 
 router.post("/:id/ban-user", auth, isAdmin, async (req, res) => {
-  let user = await User.findById(req.body.userId);
-  if(!user) return res.status(404).send("User not found.");
+  let user = await User.findOne({ username: req.body.username });
+  if (!user) return res.status(404).send("User not found.");
 
   let community = await Community.findById(req.params.id);
-  if(!community) return res.status(404).send("Community not found.");
+  if (!community) return res.status(404).send("Community not found.");
 
-  community.banned.forEach(bannedUser => {
-    if(bannedUser.userId.equals(req.body.userId)) return res.status(400).send("Bad request.");
-  })
+  community.banned.forEach((bannedUser) => {
+    if (bannedUser.username === req.body.user)
+      return res.status(400).send("Bad request.");
+  });
 
-  if(community.members.includes(req.body.userId)) {
-    community.members = community.members.filter((user) => !user.equals(req.body.userId))
-    user.joined = user.joined.filter((community) => !community.equals(req.params.id));
+  if (community.members.includes(user._id)) {
+    community.members = community.members.filter(
+      (user) => !user.equals(user._id)
+    );
+    user.joined = user.joined.filter(
+      (community) => !community.equals(user._id)
+    );
   }
 
-  const bannedUser = req.body;
+  const bannedUser = {
+    user,
+    ...req.body,
+  };
 
-  let length = parseInt(bannedUser.until);
-  bannedUser.until = Math.floor(Date.now() / 1000) + length;
+  if (bannedUser.until) {
+    let length = parseInt(bannedUser.until);
+    bannedUser.until = Math.floor(Date.now() / 1000) + length * 120;
+  }
 
-  if(community.banned && community.banned.length > 0) {
-    community.banned = [bannedUser, ...community.banned]
+  if (community.banned && community.banned.length > 0) {
+    community.banned = [bannedUser, ...community.banned];
   } else {
     community.banned = [bannedUser];
   }
   await community.save();
   await user.save();
-  
-  return res.send(community); 
-})
+
+  return res.send(community);
+});
 
 router.delete("/:id/unban-user", auth, isAdmin, async (req, res) => {
-  let user = await User.findById(req.body.userId);
-  if(!user) return res.status(404).send("User not found.");
+  let user = await User.findOne({ username: req.body.username });
+  if (!user) return res.status(404).send("User not found.");
 
   let community = await Community.findById(req.params.id);
-  if(!community) return res.status(404).send("Community not found.");
+  if (!community) return res.status(404).send("Community not found.");
 
   community.banned.forEach(() => {
-    if(!user._id.equals(req.body.userId)) return res.status(400).send("Bad request.");
-  })
+    if (!user.username === req.body.username)
+      return res.status(400).send("Bad request.");
+  });
 
-  community.banned = community.banned.filter(bannedUser => !bannedUser.userId.equals(req.body.userId));
+  community.banned = community.banned.filter(
+    (bannedUser) => !bannedUser.username === req.body.username
+  );
 
   await community.save();
 
   res.send(community);
-})
+});
 
 router.put("/:username", auth, isAdmin, async (req, res) => {
   let community = await Community.findOne({ username: req.params.username });

@@ -25,9 +25,10 @@ const communitySchema = new Schema({
   rules: [{ type: Schema.Types.ObjectId, ref: "Rule" }],
   privacy: { type: String, default: "public" },
   banned: [{
-    userId: { type: Schema.Types.ObjectId, ref: "User" },
+    user: { type: Schema.Types.ObjectId, ref: "User" },
     note: String,
     until: Number,
+    permanent: Boolean,
     reason: { type: Schema.Types.ObjectId, ref: "Rule" },
     message: String,
   }],
